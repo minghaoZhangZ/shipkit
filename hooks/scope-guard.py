@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""PreToolUse hook: block edits to files outside the implementation plan scope.
+"""PreToolUse hook: block edits outside the confirmed implementation plan.
 
-Only active during coding/verification phases. Reads 07_IMPLEMENTATION_PLAN.md
-to determine allowed file ranges.
-
-Exit 0 = allow, Exit 2 = hard block.
+Only active during coding/verification phases. Reads the canonical
+07_实施计划.md and falls back to the old 07_IMPLEMENTATION_PLAN.md.
 """
 
-import sys
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 
+KNOWN_VERSIONS = {'1.0'}
+
 KNOWN_PHASES = {
-    'analysis', 'design', 'plan', 'coding', 'self_review',
-    'verification', 'review', 'delivery', 'archive',
+    'requirement', 'prd', 'engineering_spec', 'research',
+    'backend_design', 'frontend_design', 'contract', 'plan',
+    'coding', 'self_review', 'verification', 'review', 'delivery', 'archive',
+    # Backward-compatible phases for old changes.
+    'analysis', 'design',
 }
 
 BOOLEAN_VALUES = {'true', 'false'}
+PLAN_FILENAMES = ('07_实施计划.md', '07_IMPLEMENTATION_PLAN.md')
 
 
 def find_project_root(cwd):
@@ -38,50 +42,54 @@ def find_active_workflow_state(project_root):
 
     candidates = []
     for wf_file in changes_dir.glob('*/ai/.workflow_state'):
-        if 'archive' in str(wf_file):
+        if 'archive' in str(wf_file).replace('\\', '/').split('/'):
             continue
         try:
-            mtime = wf_file.stat().st_mtime
-            candidates.append((mtime, wf_file))
+            candidates.append((wf_file.stat().st_mtime, wf_file))
         except OSError:
             continue
 
     if not candidates:
         return None, None
-
     candidates.sort(reverse=True)
-    change_dir = candidates[0][1].parent.parent
-    return candidates[0][1], str(change_dir)
+    wf_file = candidates[0][1]
+    return wf_file, str(wf_file.parent.parent)
 
 
 def parse_workflow_state(file_path):
     state = {}
     try:
-        with open(file_path, encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith('#'):
-                    continue
-                if ':' in line:
-                    key, _, val = line.partition(':')
-                    key = key.strip()
-                    val = val.strip().strip('"').strip("'")
-                    state[key] = val
+        content = Path(file_path).read_text(encoding='utf-8')
     except (IOError, OSError):
-        pass
+        return state
+
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or line.startswith('- '):
+            continue
+        if ':' in line:
+            key, _, val = line.partition(':')
+            state[key.strip()] = val.strip().strip('"').strip("'")
     return state
 
 
 def validate_workflow_state(state):
-    """Return validation errors for fields this hook relies on."""
     errors = []
     required = ('current_phase', 'requires_user_confirmation', 'user_confirmed')
 
     if not state:
         return ['workflow state is empty or unreadable']
 
+    version = state.get('schema_version', '')
+    if version not in KNOWN_VERSIONS:
+        errors.append(
+            f'unknown or missing schema_version: {version!r}. '
+            f'Known: {sorted(KNOWN_VERSIONS)}. '
+            f'Update .workflow_state to current schema or run migrate-workflow-state.py.'
+        )
+
     for key in required:
-        if key not in state or state[key] == '':
+        if not state.get(key):
             errors.append(f'missing required key: {key}')
 
     phase = state.get('current_phase', '')
@@ -101,58 +109,71 @@ def is_ai_doc(file_path, project_root):
     ai_base = str((Path(project_root) / 'openspec' / 'changes').resolve())
     try:
         rel = os.path.relpath(normalized, ai_base)
-        parts = rel.replace('\\', '/').split('/')
-        if len(parts) >= 2 and parts[-2] == 'ai':
-            return True
     except ValueError:
-        pass
-    return False
+        return False
+    parts = rel.replace('\\', '/').split('/')
+    return len(parts) >= 3 and parts[1] == 'ai'
+
+
+def find_plan_path(change_dir):
+    ai_dir = Path(change_dir) / 'ai'
+    for filename in PLAN_FILENAMES:
+        candidate = ai_dir / filename
+        if candidate.is_file():
+            return str(candidate)
+    return str(ai_dir / PLAN_FILENAMES[0])
 
 
 def parse_allowed_files(plan_path):
     try:
-        with open(plan_path, encoding='utf-8') as f:
-            content = f.read()
+        content = Path(plan_path).read_text(encoding='utf-8')
     except (IOError, OSError):
         return None
 
-    # Match section 7 header in either Chinese or English
-    m = re.search(
-        r'##\s*7\.\s*(?:Allowed|Allow|Scope|允许修改的文件范围)\s*\n(.*?)(?=\n##\s*\d+\.|\Z)',
-        content, re.DOTALL
-    )
-    if not m:
+    section_patterns = [
+        r'##\s*7\.\s*允许修改的文件范围\s*\n(.*?)(?=\n##\s*\d+\.|\Z)',
+        r'##\s*7\.\s*Allowed[^\n]*\n(.*?)(?=\n##\s*\d+\.|\Z)',
+        r'##\s*7\.\s*允许修改的文件[^\n]*\n(.*?)(?=\n##\s*\d+\.|\Z)',
+    ]
+    section = None
+    for pattern in section_patterns:
+        match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
+        if match:
+            section = match.group(1)
+            break
+    if section is None:
         return None
 
-    section = m.group(1)
     allowed = []
-    for line in section.splitlines():
-        line = line.strip().lstrip('-').strip()
-        if line and not line.startswith('#'):
+    for raw_line in section.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or line.startswith('|'):
+            continue
+        line = line.lstrip('-*').strip()
+        line = line.strip('`').strip()
+        if line and not line.startswith('说明'):
             allowed.append(line)
-
-    return allowed if allowed else None
+    return allowed or None
 
 
 def matches_any_pattern(file_path, patterns, project_root):
-    rel_path = None
     try:
         rel_path = os.path.relpath(str(Path(file_path).resolve()), project_root)
     except ValueError:
         return False
+    rel_path = rel_path.replace('\\', '/')
 
-    for pat in patterns:
+    for raw_pat in patterns:
+        pat = raw_pat.replace('\\', '/').strip()
+        if not pat or pat in ('无', 'none', 'N/A'):
+            continue
         if '*' in pat:
-            regex = re.escape(pat).replace(r'\*\*', '___DOUBLE_STAR___')
-            regex = regex.replace(r'\*', '[^/]*')
-            regex = regex.replace('___DOUBLE_STAR___', '.*')
-            if re.match(regex, rel_path):
+            regex = re.escape(pat)
+            regex = regex.replace(r'\*\*', '.*').replace(r'\*', '[^/]*')
+            if re.match(regex + r'\Z', rel_path):
                 return True
-        elif rel_path.startswith(pat.rstrip('/')):
+        elif rel_path == pat or rel_path.startswith(pat.rstrip('/') + '/'):
             return True
-        elif rel_path == pat:
-            return True
-
     return False
 
 
@@ -168,7 +189,6 @@ def main():
 
     cwd = data.get('cwd', os.getcwd())
     project_root = find_project_root(cwd)
-
     wf_file, change_dir = find_active_workflow_state(project_root)
     if wf_file is None:
         sys.exit(0)
@@ -191,8 +211,7 @@ def main():
             f"  State file: {wf_file}\n"
             f"  File: {file_path}\n"
             f"  Errors: {'; '.join(state_errors)}\n"
-            "  Allowed operation: fix files under openspec/changes/*/ai/ "
-            "including .workflow_state\n",
+            "  Allowed operation: fix files under openspec/changes/*/ai/ including .workflow_state\n",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -200,15 +219,14 @@ def main():
     if current_phase not in ('coding', 'verification'):
         sys.exit(0)
 
-    plan_path = os.path.join(change_dir, 'ai', '07_IMPLEMENTATION_PLAN.md')
+    plan_path = find_plan_path(change_dir)
     if not os.path.isfile(plan_path):
         print(
             "\n[ScopeGuard] Implementation plan not found.\n"
             f"  Phase: {current_phase}\n"
             f"  File: {file_path}\n"
             f"  Plan path: {plan_path}\n"
-            "\n07_IMPLEMENTATION_PLAN.md is required before editing business "
-            "code in coding/verification phases.\n",
+            "\n07_实施计划.md is required before editing business code in coding/verification phases.\n",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -219,8 +237,7 @@ def main():
             "\n[ScopeGuard] Could not parse allowed file scope from plan.\n"
             f"  Phase: {current_phase}\n"
             f"  File: {file_path}\n"
-            "\nSection 7 of 07_IMPLEMENTATION_PLAN.md must list allowed "
-            "file paths before editing business code.\n",
+            "\nSection 7 of 07_实施计划.md must list allowed file paths before editing business code.\n",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -233,8 +250,7 @@ def main():
         f"  Phase: {current_phase}\n"
         f"  File: {file_path}\n"
         f"  Allowed: {', '.join(allowed[:10])}\n"
-        "\nUpdate section 7 of 07_IMPLEMENTATION_PLAN.md "
-        "and get user confirmation before editing this file.\n",
+        "\nUpdate section 7 of 07_实施计划.md and get user confirmation before editing this file.\n",
         file=sys.stderr,
     )
     sys.exit(2)

@@ -47,6 +47,22 @@
 
 不能伪造测试结果。不能说"应该可以通过"，必须说明实际运行了什么命令、结果是什么。
 
+## Session Resume Rule
+
+会话开始、/clear 或 /compact 后，如果工作目录下存在 `openspec/changes/*/ai/.workflow_state`，在回复用户前执行以下恢复流程：
+
+1. 查找最近活跃的 `.workflow_state` 文件（按修改时间排序，排除 archive）。
+2. 读取 `.workflow_state` 获取 `current_phase`、`current_task`、`last_completed_task`、`task_stack`、`resume_context`。
+3. 读取 `CONTEXT_PACKAGE.md` 获取完整上下文。
+4. 如果 `requires_user_confirmation=true` 且 `user_confirmed=false`：
+   - 用 `AskUserQuestion` 向用户呈现待确认的 checkpoint 和文档。
+   - 用户确认前不得进入下一阶段。
+5. 如果 `requires_user_confirmation=false` 或 `user_confirmed=true`：
+   - 根据 `resume_context` 和 `task_stack` 确定下一步。
+   - 输出简短恢复提示："已恢复 change [change_id]，当前阶段 [current_phase]，任务 [current_task]。继续执行。"
+   - 直接继续工作，不等待用户确认。
+6. 如果 `.workflow_state` 格式损坏或必填字段缺失，输出警告并调用 `resume-flow` skill 手动恢复。
+
 ## Workflow Routing
 
 根据用户意图匹配工作流家族。家族内部如何分级（standard/strict/minimal）、如何编排 Agent、输出什么文档，由家族 Skill 自己决定，CLAUDE.md 不展开。
@@ -60,6 +76,7 @@
 | 代码审查（PR/变更后） | `review-flow` | — |
 | 需求完成后的经验沉淀 | `learn-from-delivery` | learning |
 | 验证变更是否正确完成 | `verification-flow` | — |
+| 恢复工作流进度 | `resume-flow` | — |
 | 初始化团队热插拔/工程事实库/团队一致性治理模板 | `init-engineering-consistency` | — |
 
 不匹配任何家族 → 直接对话，不走工作流。

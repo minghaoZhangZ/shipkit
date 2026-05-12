@@ -6,50 +6,51 @@ origin: ECC-adapted
 
 # Spring Boot TDD
 
-接入 `test-planner` 和 `<change-dir>/ai/08_TEST_PLAN.md`，把验收标准转成可运行测试。
-
-优先使用场景：复杂业务规则、bug 防回归、权限/金额/订单/库存/状态机、Service/Repository/Controller 行为变化、用户明确要求测试先行。
+接入 `test-planner` 和 `08_验证计划.md`，把验收标准转成可运行测试。
 
 ## Required Inputs
 
-- `<change-dir>/ai/02_SPEC.md`
-- `<change-dir>/ai/03_CODEBASE_RESEARCH.md`
-- `<change-dir>/ai/07_IMPLEMENTATION_PLAN.md`
-- `<change-dir>/ai/08_TEST_PLAN.md`
+- `CONTEXT_PACKAGE.md`
+- `02_工程需求规格.md`
+- `03_代码库调研.md`
+- `07_实施计划.md`
+- `08_验证计划.md`
+
+统一使用中文 canonical 文档名。
 
 ## Test Selection
 
 Service / Domain：
 
-- 用 JUnit 5 + Mockito。
+- 使用 JUnit 5 + Mockito。
 - 覆盖业务规则、边界条件、异常分支。
 - 使用 AssertJ，断言业务结果。
 
 Controller：
 
-- 用 `@WebMvcTest` 或项目现有 Web 测试风格。
+- 使用 `@WebMvcTest` 或项目现有 Web 测试风格。
 - 覆盖状态码、请求校验、响应结构、异常映射、权限。
 
 Repository：
 
-- 用 `@DataJpaTest`。
+- 使用 `@DataJpaTest`。
 - 数据库差异敏感时优先 Testcontainers。
 - 覆盖唯一约束、分页、排序、查询条件。
 
 Integration：
 
-- 用 `@SpringBootTest` 或项目现有集成测试方式。
+- 使用 `@SpringBootTest` 或项目现有集成测试方式。
 - 覆盖跨层流程、事务、幂等、消息或外部接口适配。
 
 ## TDD Loop
 
-1. 从 `<change-dir>/ai/08_TEST_PLAN.md` 选择一个用例。
+1. 从 `08_验证计划.md` 选择一个用例。
 2. 写一个应该失败的测试。
 3. 运行测试并确认失败原因正确。
 4. 写最小实现。
 5. 运行测试确认通过。
 6. 重构。
-7. 更新 `<change-dir>/ai/09_TEST_RESULT.md`。
+7. 更新 `09_验证结果.md`。
 
 ## Assertions
 

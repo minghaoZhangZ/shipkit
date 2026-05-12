@@ -1,6 +1,6 @@
 {
-  "_workflowVersion": "1.0.0",
-  "_description": "公用配置文件——安装时合并到用户 settings.json，不覆盖 env 字段",
+  "_swVersion": "2.0.0",
+  "_description": "公用 ShipKit 配置——安装时合并到用户 settings.json。env 字段永不覆盖。",
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "ui-ux-pro-max@ui-ux-pro-max-skill": true
@@ -13,9 +13,19 @@
       }
     }
   },
-  "effortLevel": "max",
   "hooks": {
     "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"$HOME/.claude/hooks/canonical-filename-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "文件名检查中..."
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [

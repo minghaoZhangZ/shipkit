@@ -6,21 +6,24 @@ origin: ECC-adapted
 
 # JPA Patterns
 
-接入 `data-contract-designer`、`database-reviewer` 和 `<change-dir>/ai/06_DATA_CONTRACT.md`。
+接入 `data-contract-designer`、`database-reviewer` 和 `06_接口与数据契约.md`。
 
 ## Required Inputs
 
-- `<change-dir>/ai/02_SPEC.md`
-- `<change-dir>/ai/03_CODEBASE_RESEARCH.md`
-- `<change-dir>/ai/06_DATA_CONTRACT.md`
-- `<change-dir>/ai/07_IMPLEMENTATION_PLAN.md`
+- `CONTEXT_PACKAGE.md`
+- `02_工程需求规格.md`
+- `03_代码库调研.md`
+- `06_接口与数据契约.md`
+- `07_实施计划.md`
+
+统一使用中文 canonical 文档名。
 
 ## Entity Rules
 
 - Entity 不直接作为 API Response。
 - 字段约束应和数据库约束、DTO 校验保持一致。
 - 枚举持久化优先 `EnumType.STRING`。
-- 时间字段优先使用 `Instant` 或项目既有时间类型。
+- 时间字段优先使用项目既有时间类型。
 - 金额使用 `BigDecimal`。
 - 生产环境不依赖 Hibernate 自动 DDL。
 
@@ -34,10 +37,10 @@ origin: ECC-adapted
 ## Query Rules
 
 - 大列表必须分页。
-- 读模型可以用 DTO projection 或接口 projection。
+- 读模型可用 DTO projection 或接口 projection。
 - 复杂查询必须检查 N+1。
 - Native SQL 必须参数化。
-- 修改查询需要 `@Modifying` 和事务边界。
+- 修改查询需要事务边界。
 
 ## Transaction Rules
 
@@ -48,7 +51,7 @@ origin: ECC-adapted
 
 ## Index And Migration Rules
 
-写入 `<change-dir>/ai/06_DATA_CONTRACT.md` 时必须说明：
+写入 `06_接口与数据契约.md` 时必须说明：
 
 - 新增或变更字段。
 - 索引设计。
@@ -56,14 +59,6 @@ origin: ECC-adapted
 - 外键和删除策略。
 - 数据迁移策略。
 - 回滚方案。
-
-索引优先覆盖：
-
-- WHERE 字段。
-- JOIN 字段。
-- 外键字段。
-- 排序和分页字段。
-- 幂等键。
 
 ## Testing
 

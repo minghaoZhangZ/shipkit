@@ -7,7 +7,7 @@ description: Use when the user explicitly asks to initialize the team hot-plug g
 
 ## Purpose
 
-Initialize the optional project-level consistency governance scaffold in the current project.
+Initialize the optional project-level team engineering standards scaffold in the current project.
 
 This skill only creates templates. It must not enter product delivery, analyze a new requirement, modify business code, or enable enforced governance by default.
 
@@ -18,6 +18,8 @@ Use this skill only when the user explicitly asks for one of these intents:
 - "我要走团队热插拔功能"
 - "初始化团队一致性治理"
 - "初始化工程事实库"
+- "初始化团队规范"
+- "初始化代码规范"
 - "创建 openspec/specs/engineering"
 - "启用 project-level consistency governance 模板"
 
@@ -60,14 +62,30 @@ Create these files if missing:
 
 ```text
 engineering.json
-architecture-principles.md
-dependency-rules.md
-domain-concepts.md
-module-boundaries.md
-reusable-apis.md
-forbidden-patterns.md
-sop-registry.md
-metrics-ledger.jsonl
+00-总则/行为准则.md
+00-总则/需求澄清与上下文规则.md
+10-编码规范/Java后端编码规范.md
+10-编码规范/Spring事务与并发规范.md
+10-编码规范/SQL与数据库规范.md
+10-编码规范/前端编码与交互规范.md
+10-编码规范/API契约与DTO-VO规范.md
+10-编码规范/通用空值与equals规范.md
+20-架构规范/分层架构规范.md
+20-架构规范/模块边界规范.md
+20-架构规范/依赖方向规范.md
+20-架构规范/领域概念与命名规范.md
+20-架构规范/可复用能力规范.md
+30-质量与验证/单元测试规范.md
+30-质量与验证/验证命令与测试证据规范.md
+30-质量与验证/代码审查清单.md
+30-质量与验证/禁止模式清单.md
+40-交付流程/需求拆解规范.md
+40-交付流程/实施计划规范.md
+40-交付流程/变更范围控制规范.md
+40-交付流程/发布与回滚规范.md
+50-经验沉淀/SOP注册表.md
+50-经验沉淀/问题复盘规范.md
+50-经验沉淀/指标台账.jsonl
 ```
 
 Use templates from:
@@ -102,11 +120,20 @@ The manifest is the only activation switch for Enhanced Flow.
 - `mode=enforced`: deterministic violations can block review/archive.
 - `status=draft`: facts are not approved yet; keep `enabled=false` unless the team has completed consensus.
 
-### Markdown Files
+### 中文分层目录
+
+The scaffold is organized by how agents use the standards:
+
+- `00-总则`: agent behavior, clarification, context rules.
+- `10-编码规范`: concrete backend, frontend, SQL, API, null-safety coding standards.
+- `20-架构规范`: layering, module boundaries, dependency direction, domain concepts, reusable APIs.
+- `30-质量与验证`: unit tests, command evidence, review checklist, forbidden patterns.
+- `40-交付流程`: requirement breakdown, implementation plan, scope control, release and rollback.
+- `50-经验沉淀`: SOP registry, retrospective rules, metrics ledger.
 
 Each markdown file is a team-editable consensus artifact. The scaffold should contain headings and examples, not final project decisions.
 
-### metrics-ledger.jsonl
+### 指标台账.jsonl
 
 Initialize with a schema record only. Runtime metrics are appended later by delivery workflows when Enhanced Flow is enabled.
 

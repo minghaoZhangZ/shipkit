@@ -3,25 +3,23 @@ name: learn-from-delivery
 description: Use when a feature, bugfix, review, or release is finished and reusable delivery lessons or promotion candidates should be extracted.
 ---
 
-你要执行交付后经验沉淀流程。
+# Learn From Delivery
 
-## 工作流
+用于交付后的经验沉淀。读取本次 change 文档、metrics 和审查结果，输出可复用经验、SOP candidate 和 Agent 评估。
 
-1. 阅读本次 `<change-dir>/ai/` 文档。
-2. 读取 `<change-dir>/ai/CHANGE_METRICS.json`；如果不存在，说明原因并按现有文档推断，但不得伪造指标。
+## Flow
+
+1. 阅读 `<change-dir>/ai/` 文档，使用中文 canonical 名。旧 change（2026-05-15 前创建）可能使用英文旧名，读取时兼容但新输出必须用中文名。
+2. 读取 `CHANGE_METRICS.json`；不存在时说明原因，不得伪造指标。
 3. 总结产品、架构、实现、测试、审查中的有效模式。
 4. 识别重复问题和低质量 Agent 输出。
-5. 输出 `<change-dir>/ai/13_LESSONS_LEARNED.md`（旧 change 可保留 `12_LESSONS_LEARNED.md`）。
-6. 输出 `<change-dir>/ai/14_AGENT_EVAL.md`（旧 change 可保留 `13_AGENT_EVAL.md`）。
+5. 输出 `13_经验沉淀.md`。
+6. 输出 `14_Agent评估.md`。
 7. 在 lessons 中产出 SOP candidate 小节。
-8. 如果检测到 `openspec/specs/engineering/engineering.json` 且 `enabled=true`、`modules.sopRegistry=true`，读取 `metrics-ledger.jsonl` 并按重复信号更新 `sop-registry.md`；未启用时只保留 candidate，不强制注册。
+8. 如果启用 `openspec/specs/engineering/engineering.json` 且 `modules.learningGovernance=true`，读取 `50-经验沉淀/指标台账.jsonl` 并按重复信号更新 `50-经验沉淀/SOP注册表.md`。
 9. 更新 `<change-dir>/metadata.json` 状态为 `done`。
 
-## 下一步
-
-调用 `openspec-archive-change` 归档本次 change。
-
-## 晋升标准（Base / Enhanced）
+## 晋升标准
 
 - 单 change 首次出现：记录到 lessons。
 - 同类 signal 跨 change 出现 2 次：SOP candidate。
@@ -29,7 +27,7 @@ description: Use when a feature, bugfix, review, or release is finished and reus
 - 同类确定性 signal 跨 change 出现 3 次：建议做成 hook。
 - 跨项目重复出现：建议加入全局 rules。
 
-没有启用 Enhanced Flow 时，不写项目级 `sop-registry.md`，只在 lessons 中保留 SOP candidate。
+没有启用 Enhanced Flow 时，不写项目级 SOP 注册表，只在 lessons 保留 candidate。
 
 ## 输出要求
 
@@ -40,4 +38,4 @@ description: Use when a feature, bugfix, review, or release is finished and reus
 - 证据来源
 - 下次如何复用
 - 是否建议晋升
-- 关联 metrics signal（eventType / eventKey / count）
+- 关联 metrics signal

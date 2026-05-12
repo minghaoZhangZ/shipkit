@@ -3,47 +3,85 @@ name: review-flow
 description: Use when staged or unstaged changes need evidence-based review before merge, release, or handoff.
 ---
 
-你要执行只读审查流程。
+# Review Flow
+
+执行只读审查流程。reviewer 不允许修改代码。
 
 ## 前置条件
 
-需要有已存在的 `<change-dir>` 且至少有 `02_SPEC.md` 和 `07_IMPLEMENTATION_PLAN.md`。
+需要有 `<change-dir>`，并至少存在：
+
+- `02_工程需求规格.md`
+- `07_实施计划.md`
+- `08_验证计划.md`
+- `09_验证结果.md`
+
+统一使用中文 canonical 文档名。
 
 ## 工作流
 
-1. 查看 `git status` 和 `git diff`。
-2. 阅读相关 `<change-dir>/ai/` 文档。
-3. 调用 `code-reviewer`。
-4. 如果涉及 Java/Spring、数据库、安全，可按需调用专项 reviewer。
-5. 如果审查发现阻塞或高风险问题，只给修复建议，不直接改代码；交给 resolver 或主控 Agent 处理。
-6. 输出或更新 `<change-dir>/ai/11_REVIEW_REPORT.md`（旧 change 可保留 `10_REVIEW_REPORT.md`）。
-7. 如果检测到 `openspec/specs/engineering/engineering.json` 且 `enabled=true`、`modules.consistencyReview=true`，生成 `<change-dir>/ai/PROJECT_CONSISTENCY_REVIEW.md`：
-   - `mode=advisory`：记录跨 change 一致性风险，不阻断。
-   - `mode=enforced`：不通过时审查结论不得为通过。
-   - 未启用 manifest：跳过，不得阻断 Base Flow。
-8. 更新 `<change-dir>/ai/CHANGE_METRICS.json` 的 `reviewBlockers`、`pendingDecisionsCreated`、`architectureOwnerDecisionsCreated`。
+1. 查看 `git status` 和 `git diff`，或等价的变更证据。
+2. 阅读相关 `<change-dir>/ai/` 文档和 `CONTEXT_PACKAGE.md`。
+3. 主控 Agent 在调用 reviewer 前，确认 CONTEXT_PACKAGE.md 的 Input Manifest 已包含：
+   - `openspec/specs/engineering/30-质量与验证/禁止模式清单.md`（存在时）
+   - `openspec/specs/engineering/30-质量与验证/代码审查清单.md`（存在时）
+   - `openspec/specs/engineering/20-架构规范/模块边界规范.md`（存在时）
+4. 调用 `code-reviewer`。返回后检查 Pre-mortem 校验通过标记；失败则补全输入重新调用。
+5. 如果涉及 Java/Spring、数据库、安全、前端 UI/UX，调用专项 reviewer。每个专项 reviewer 返回后检查 Pre-mortem 校验通过标记。
+6. 如果发现阻塞或高风险问题，只给修复建议，交给主控 Agent 或 resolver 处理。
+7. 输出或更新 `11_审查报告.md`。
+8. 如果启用工程事实库且 `modules.architectureRules=true` 或 `modules.qualityVerification=true`，生成 `PROJECT_CONSISTENCY_REVIEW.md`。
+9. 更新 `CHANGE_METRICS.json` 的 `reviewBlockers`、`pendingDecisionsCreated`、`architectureOwnerDecisionsCreated`。
 
-## 审查顺序（先做覆盖，再做质量）
+## 审查顺序
 
-**第一关 — 需求覆盖（机械核对，不过则停）**：
+**第一关：需求覆盖**
 
-对照 `02_SPEC.md` 需求追踪表的每个 Req ID：
-- 在 `git diff` 中是否有对应代码改动
-- 在 `08_TEST_PLAN.md` 或实际测试文件中是否有对应测试
-- 标记为"本次不实现"的 Req ID 是否有用户确认证据
+对照 `02_工程需求规格.md` 的每个 Req ID：
 
-任何 Req ID 无覆盖且无用户确认 → 审查结论"不通过"，修复后才进入第二关。
+- 是否有对应设计。
+- 是否有对应实施任务。
+- 是否有对应验证计划和验证证据。
+- 标记为本次不实现的 Req ID 是否有用户确认证据。
 
-**第二关 — 代码质量**：
+任何 Req ID 无覆盖且无用户确认，审查结论必须为”不通过”。
+
+**第二关：范围和证据**
+
+- 改动是否都在 `07_实施计划.md` 允许范围。
+- 是否存在 pending 决策。
+- 是否存在未确认 checkpoint。
+- 验证结果是否是真实命令输出（非主控 Agent 自己跑的结果）。
+
+**第三关：反模式对照**
+
+如果 `禁止模式清单.md` 存在，逐条对照 FORBID-xxx 规则检查 diff。每个违反项标记严重级别和证据。
+
+**第四关：交叉引用**
+
+从 `03_代码库调研.md` 第 1-3 节提取 2-3 个相似现有实现作为参考基线，对比变更是否遵循现有模式。不一致且无合理原因的标记为 P1。
+
+**第五关：测试设计审查**
+
+对照 `02_工程需求规格.md` 中每个 AC 的 Given/When/Then，检查 `08_验证计划.md` 的测试用例是否覆盖了 Then 中所有可观测结果。边界条件是否至少有一个对应测试用例。标记缺失的测试场景为 P1。
+
+**第六关：代码质量**
 
 - 是否违反模块边界。
 - 是否依赖 implementation detail。
 - 是否缺少异常处理、事务、并发、安全、性能考虑。
 - 是否缺少关键测试。
-- 如果启用 Enhanced Flow：是否违反项目级工程事实库中的模块边界、领域概念、reusable API、forbidden patterns。
+- 前端改动是否符合 `rules/frontend/ui-ux-quality.md`，并具备浏览器验证证据。
 
-## 禁止事项
+## 输出
 
-- reviewer 不允许修改代码。
-- 不允许只给泛泛建议。
-- 每个问题必须有文件、位置或证据。
+`11_审查报告.md` 必须包含：
+
+- 结论：通过 / 不通过
+- 阻塞问题
+- 非阻塞问题
+- Req ID 覆盖映射
+- 已读输入
+- 引用证据
+- 未覆盖项
+- 下游依赖

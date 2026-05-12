@@ -3,495 +3,482 @@ name: product-to-test-flow
 description: Use when a normal product requirement needs end-to-end delivery from product discovery through tests, review, release notes, and learning.
 ---
 
-# Product To Test Flow（渐进式披露架构）
+# Product To Test Flow
 
-## 核心设计原则
+本流程只做路由和门禁，不承载具体模板细节。阶段细节由专项 skill 和 agent 负责，主控 Agent 负责最终编码实现。
 
-- **按需加载**：只披露当前阶段要做什么，不提前暴露后续阶段细节。
-- **状态外置**：阶段状态写入 `<change-dir>/ai/.workflow_state`，不依赖对话上下文记忆。
-- **循环收敛**：编码↔验证循环最多 3 轮，第 4 轮强制出口。
-- **问题分流**：验证阶段区分 Bug修复（3轮内收敛）和需求变更（回退设计阶段）。
+## 核心原则
 
-## 工作流入口（始终加载）
+- **角色化确认**：产品确认 PRD，技术确认工程规格，前端确认交互，后端确认架构，前后端确认契约，负责人确认开工。
+- **渐进式披露**：当前阶段只加载当前阶段的 skill、agent、输入包和规范。
+- **上下文不丢失**：每阶段开始前更新 `CONTEXT_PACKAGE.md`，每阶段输出必须有 Req ID 覆盖映射。
+- **AI 文档先行**：所有 checkpoint 未确认前，只能写 `openspec/changes/*/ai/` 下的 AI 文档，不得修改业务代码。
+- **主控实现**：designer/reviewer/planner 只产出文档或审查意见；业务代码由主控 Agent 按 `07_实施计划.md` 执行。
 
-收到需求后，执行以下决策树：
+## 文档标准
 
-```
-判断任务类型：
-├── 小 bug / 小改动 → 先检查是否满足 minimal 条件（见下方）→ 是 → minimal
-│                                                   → 否 → standard
-├── 常规产品需求     → profile=standard → 加载 standard-profile
-├── 高风险需求       → profile=strict → 加载 strict-profile
-└── 不确定           → 问用户要哪个 profile
-```
+新流程必须写中文 canonical 文档名。旧 change（2026-05-15 前创建）可能使用英文旧名，读取时兼容但新输出一律使用中文名。
 
-**minimal profile 准入条件（必须同时满足，任一不满足则至少 standard）**：
+| 阶段 | 新文档 | 旧兼容名 |
+|---|---|---|
+| 原始需求 | `00_原始需求.md` | `00_REQUIREMENT.md` |
+| 产品需求 | `01_PRD产品需求.md` | `01_PRODUCT_DISCOVERY.md` |
+| 工程规格 | `02_工程需求规格.md` | `02_SPEC.md` |
+| 代码调研 | `03_代码库调研.md` | `03_CODEBASE_RESEARCH.md` |
+| 后端方案 | `04_后端方案说明.md` | `04_BACKEND_DESIGN.md` |
+| 前端方案 | `05_前端方案说明.md` | `05_FRONTEND_DESIGN.md` |
+| 接口契约 | `06_接口与数据契约.md` | `06_DATA_CONTRACT.md` |
+| 实施计划 | `07_实施计划.md` | `07_IMPLEMENTATION_PLAN.md` |
+| 验证计划 | `08_验证计划.md` | `08_TEST_PLAN.md` |
+| 验证结果 | `09_验证结果.md` | `09_TEST_RESULT.md` |
+| 自查报告 | `10_自查报告.md`（已废弃，新 change 不产出） | `10_SELF_REVIEW.md` |
+| 审查报告 | `11_审查报告.md` | `11_REVIEW_REPORT.md` |
+| 发布说明 | `12_发布说明.md` | `12_RELEASE_NOTE.md` |
+| 经验沉淀 | `13_经验沉淀.md` | `13_LESSONS_LEARNED.md` |
+| Agent 评估 | `14_Agent评估.md` | `14_AGENT_EVAL.md` |
 
-- 不涉及接口兼容性变化（不改变已有 API 的字段/类型/语义）
-- 不涉及数据库 schema 或 migration
-- 不涉及权限、鉴权、金额、订单、库存
-- 不涉及并发、异步消息、外部集成
-- 不新增依赖（pom.xml / build.gradle / package.json 不变）
-- 不改变 public API 行为
-- 可用一个目标测试或最小复现命令验证
-- 改动文件数 ≤ 3
+每个阶段输出必须包含：
 
-如果无法确定，必须询问用户选择 profile。
+- `已读输入`
+- `引用证据`
+- `Req ID 覆盖映射`
+- `未覆盖项`
+- `下游依赖`
 
-**所有 profile 共享的约束**：
-- 每个阶段完成后，更新 `<change-dir>/ai/.workflow_state` 文件
-- 每轮对话开始时，先读 `.workflow_state` 确认当前阶段
-- 阶段间跳转必须经过 Checkpoint 决策，不允许跳过
+不确定项写入 `PENDING_DECISIONS.md`。存在 pending 决策时，不得进入编码。
 
-## 可插拔一致性治理（始终加载）
+## Profile 路由
 
-本工作流默认运行 **Base Flow**，不要求项目配置全局事实库。只有检测到项目根目录存在 `openspec/specs/engineering/engineering.json` 且 `enabled=true` 时，才启用 **Enhanced Flow**。
+### minimal
 
-### Capability Detection
+用于小 bug、小 UI 修复、窄范围重构、单个失败测试修复。minimal 不强制 PRD/设计 checkpoint。
 
-每次创建或恢复 change 时执行：
+必须同时满足：
 
-1. 查找 `<project-root>/openspec/specs/engineering/engineering.json`。
-2. 文件不存在、解析失败、`enabled=false` 或 `mode=off` → 使用 Base Flow。
-3. `enabled=true` → 读取 `mode` 和 `modules`，启用对应 Enhanced 能力。
-4. 将探测结果写入 `.workflow_state`。
+- 不改接口契约、数据库、权限、事务/并发、外部系统。
+- 不涉及安全、金钱、订单、库存、迁移、敏感数据。
+- 不涉及前后端同时改。
+- 产品语义清楚。
+- 预计改动文件不超过 3 个。
+- 可用一个目标测试或最小复现路径验证。
 
-默认值（无 manifest 时必须使用）：
+任一条件不满足，升级 standard 或 strict。
 
-```yaml
-project_consistency_enabled: false
-engineering_manifest: ""
-engineering_mode: "off"          # off / advisory / enforced
-self_review_mode: "base"         # base / enhanced
-metrics_mode: "change_only"      # change_only / project_ledger
-sop_mode: "candidate_only"       # candidate_only / registry
-consistency_review_required: false
-architecture_owner_required: false
-self_review_status: "pending"
-self_review_issue_count: 0
-metrics_recorded: false
-```
+### standard
 
-Enhanced Flow 规则：
+普通产品需求默认使用 standard。按需执行前端、后端、契约阶段。
 
-- `mode=advisory`：增强检查只记录风险，不阻断归档。
-- `mode=enforced`：增强检查作为 review/archive 门禁。
-- 未启用 manifest 时，不得强制读取 `openspec/specs/engineering/*`，不得强制生成 `PROJECT_CONSISTENCY_REVIEW.md`，不得强制写 `metrics-ledger.jsonl` 或 `sop-registry.md`。
+### strict
 
-## 状态文件格式
+涉及安全、金钱、订单、库存、数据库迁移、并发、外部集成、文件、webhook、敏感数据、不可逆操作时使用 strict。strict 必须执行契约、回滚、安全/DB/验证证据门禁。
 
-每进入新阶段或完成一轮循环时，更新 `<change-dir>/ai/.workflow_state`。
-
-**Hook 依赖以下字段做硬拦截，必须保持格式一致**（每行 `key: value`，不含前导空格）：
+## `.workflow_state` 标准
 
 ```yaml
-change_id: "2026-05-04-feature-rag-eval-xxx"
+schema_version: "1.0"
+change_id: "<change-id>"
 profile: standard
-current_phase: plan
-checkpoint: plan_confirmation
+current_phase: prd
+# --- task 级跟踪字段 ---
+current_task: "输出用户角色与业务流程"
+last_completed_task: "输出背景与目标"
+next_action: "调用 product-discovery-analyst 继续写 01_PRD产品需求.md 的业务流程部分"
+task_stack:
+  - id: "1"
+    description: "背景与目标"
+    status: completed
+  - id: "2"
+    description: "用户角色与业务流程"
+    status: in_progress
+  - id: "3"
+    description: "功能范围与非目标"
+    status: pending
+  - id: "4"
+    description: "验收标准与异常/边界场景"
+    status: pending
+  - id: "5"
+    description: "Req ID 覆盖映射与下游依赖"
+    status: pending
+phase_history:
+  - phase: requirement
+    completed_at: "2026-05-12T10:30"
+    output: "00_原始需求.md"
+resume_context: |
+  正在执行 prd 阶段的 01_PRD产品需求.md。
+  已完成背景与目标，正在编写用户角色与业务流程。
+  上次调用 product-discovery-analyst 时，要求基于 00_原始需求.md 中用户场景展开。
+  下一步：完成业务流程后进入功能范围与非目标。
+# --- checkpoint 字段 ---
+checkpoint: prd_confirmation
 requires_user_confirmation: true
 user_confirmed: false
-confirmation_type: "approve_implementation_plan"
+confirmation_type: approve_prd
+confirmation_role: product_owner
+confirmation_docs: ["01_PRD产品需求.md"]
+confirmed_checkpoints: []
+required_checkpoints:
+  - prd_confirmation
+  - engineering_spec_confirmation
+  - plan_confirmation
+# --- 元信息 ---
+affected_areas: ["backend", "frontend", "contract"]
+context_package: "CONTEXT_PACKAGE.md"
+trace_matrix_status: pending
 round: 0
 max_rounds: 3
-pending_docs: ["09", "10"]
-bug_count: 0
-known_issues: []
-uncovered_req_ids: []
 pending_decisions_count: 0
 project_consistency_enabled: false
 engineering_manifest: ""
 engineering_mode: "off"
-self_review_mode: "base"
+verification_mode: "independent"
 metrics_mode: "change_only"
 sop_mode: "candidate_only"
 consistency_review_required: false
 architecture_owner_required: false
-self_review_status: "pending"
-self_review_issue_count: 0
+verification_status: "pending"
+verification_issue_count: 0
 metrics_recorded: false
-created_at: "2026-05-04T15:00"
-updated_at: "2026-05-04T19:00"
+created_at: "2026-05-12T00:00"
+updated_at: "2026-05-12T00:00"
 ```
 
-**Hook 读取的关键字段**：
+## Checkpoint
 
-| 字段 | 取值 | Hook 行为 |
-|------|------|-----------|
-| `requires_user_confirmation` | `true` / `false` | `true` 时启用门禁检查 |
-| `user_confirmed` | `true` / `false` | `false` 时拦截业务代码修改 |
-| `checkpoint` | `spec_confirmation` / `plan_confirmation` | 用于拦截消息中的阶段标识 |
-| `confirmation_type` | `approve_spec` / `approve_implementation_plan` | 用于拦截消息中的确认类型 |
-| `current_phase` | `analysis` / `design` / `plan` / `coding` / `self_review` / `verification` / `review` / `delivery` / `archive` | scope-guard 只在 `coding`/`verification` 阶段激活 |
-| `project_consistency_enabled` | `true` / `false` | 是否启用 Enhanced Flow |
-| `engineering_mode` | `off` / `advisory` / `enforced` | 控制增强检查是否阻断 |
-| `self_review_mode` | `base` / `enhanced` | 控制 self-review checklist 深度 |
-| `metrics_mode` | `change_only` / `project_ledger` | 控制是否写项目级 metrics ledger |
+| checkpoint | confirmation_type | role | docs | 解锁 |
+|---|---|---|---|---|
+| `prd_confirmation` | `approve_prd` | 产品/业务负责人 | `01_PRD产品需求.md` | 工程规格 |
+| `engineering_spec_confirmation` | `approve_engineering_spec` | 技术负责人 | `02_工程需求规格.md` | 代码调研和设计 |
+| `backend_design_confirmation` | `approve_backend_design` | 后端负责人 | `04_后端方案说明.md` | 后端实施任务/契约 |
+| `frontend_design_confirmation` | `approve_frontend_design` | 前端负责人/产品可参与 | `05_前端方案说明.md` | 前端实施任务/契约 |
+| `contract_confirmation` | `approve_contract` | 前端+后端负责人 | `06_接口与数据契约.md` | 实施计划 |
+| `plan_confirmation` | `approve_implementation_plan` | 研发负责人 | `07_实施计划.md`, `08_验证计划.md` | 编码、构建、测试 |
 
-**各阶段必须更新的字段**：
+每个 checkpoint 必须：
 
-| 阶段切换 | 必须设置 |
-|---------|---------|
-| 进入 analysis | `current_phase=analysis`, `requires_user_confirmation=false`, `user_confirmed=true` |
-| analysis 完成，等待确认 | `checkpoint=spec_confirmation`, `requires_user_confirmation=true`, `user_confirmed=false`, `confirmation_type=approve_spec` |
-| 用户确认 spec | `user_confirmed=true`, `requires_user_confirmation=false`, `current_phase=design` |
-| 进入 plan | `current_phase=plan` |
-| plan 完成，等待确认 | `checkpoint=plan_confirmation`, `requires_user_confirmation=true`, `user_confirmed=false`, `confirmation_type=approve_implementation_plan` |
-| 用户确认 plan | `user_confirmed=true`, `requires_user_confirmation=false`, `current_phase=coding` |
-| 进入 self-review | `current_phase=self_review`, `self_review_status=pending` |
-| 进入 verification | `current_phase=verification` |
-| 进入 review | `current_phase=review` |
-| 进入 delivery | `current_phase=delivery` |
-| 归档 | `current_phase=archive` |
+1. 更新 `.workflow_state`：`requires_user_confirmation=true`, `user_confirmed=false`。
+2. 用 `AskUserQuestion` 请求对应角色确认。
+3. 用户确认前不得进入下一阶段，不得修改业务代码。
+4. 用户确认后写入 `confirmed_checkpoints`，并将 `requires_user_confirmation=false`, `user_confirmed=true`。
 
-## Phase 路由（按 Profile 裁剪）
+## Context Package
 
-不同 Profile 加载不同阶段：
-
-| 阶段 | minimal | standard | strict |
-|------|---------|----------|--------|
-| 需求分析 | 简版 | 完整 | 完整 |
-| 产品发现 | 跳过 | 完整 | 完整 |
-| 代码库调研 | 跳过 | 完整 | 完整 |
-| 后端设计 | 跳过 | 按需 | 完整 |
-| 数据契约 | 跳过 | 按需 | 完整 |
-| 实施计划 | 简版 | 完整 | 完整 |
-| 测试计划 | 简版 | 完整 | 完整 |
-| 用户确认 | 跳过 | 强制暂停 | 强制暂停 |
-| 编码 | 完整 | 完整 | 完整 |
-| 自查 | Base checklist | Base/Enhanced checklist | Base/Enhanced checklist |
-| 验证 | 目标测试 | 构建+测试+lint | 构建+测试+lint+安全+DB |
-| 审查 | 简版（自检） | 独立Agent审查 | 独立Agent审查 |
-| 交付 | RELEASE_NOTE | RELEASE_NOTE+Lessons+Eval | 全部+回滚方案 |
-| 归档 | 跳过 | 完整 | 完整 |
-
----
-
-## Profile 详细阶段定义
-
-以下阶段按需加载。Agent 进入对应阶段时，从以下定义中只读取当前阶段的内容。
-
----
-
-<!-- PHASE: analysis -->
-### Phase: 分析（standard/strict）
-
-1. 写入需求原文到 `00_REQUIREMENT.md`
-2. 调用 `product-discovery-analyst` → `01_PRODUCT_DISCOVERY.md`
-3. 调用 `product-spec-analyst` → `02_SPEC.md`
-4. 验证 `02_SPEC.md` 第 11 节"需求追踪表"完整：每个原始需求片段都有 Req ID，"本次实现"列无未经确认的"否"。
-5. 输出 spec 摘要。
-6. 如有"待确认问题"（来自 `01_PRODUCT_DISCOVERY.md` 第 9 节或 `02_SPEC.md` 第 9 节），写入 `<change-dir>/ai/PENDING_DECISIONS.md`。
-
-**PENDING_DECISIONS.md 格式**：
+每个阶段开始前更新 `<change-dir>/ai/CONTEXT_PACKAGE.md`：
 
 ```markdown
-# Pending Decisions
+# Context Package
 
-## DEC-001
-- 来源: 02_SPEC.md 第 9 节
-- 问题: REQ-004 是否本次实现？
-- 影响: 不实现则需从测试计划和实施计划排除
-- 状态: pending
+## Change 基本信息
+- change_id:
+- profile:
+- current_phase:
+- checkpoint:
+- affected_areas:
 
-## DEC-002
-- 来源: 01_PRODUCT_DISCOVERY.md 第 9 节
-- 问题: 是否需要支持多租户？
-- 影响: 涉及表结构设计和权限模型
-- 状态: pending
+## 全局必读
+- 00_原始需求.md
+- 01_PRD产品需求.md
+- 02_工程需求规格.md
+- 03_代码库调研.md
+
+## 当前阶段必读
+
+## Input Manifest
+
+当前阶段子 Agent 启动前必须逐项验证以下文件存在且满足最小内容判据。
+本表必须与"当前阶段必读"一致——不允许必读但未列入 manifest。
+
+| 文件 | 必需性 | 最小内容判据 |
+|------|--------|-------------|
+
+## 项目规范必读
+
+## 当前阶段目标
+
+## 输出合同
+- 输出文件:
+- 必须包含章节:
+- 必须覆盖 Req ID:
+- 不确定项写入:
+
+## 停止条件
 ```
 
-后续阶段（设计、计划、审查）的 Agent 发现新待确认项时，追加到此文件。状态变为 `confirmed` 时更新。
+子代理第一步必须读取 `CONTEXT_PACKAGE.md` 并执行 `rules/workflow/premortem-validation.md` 规定的输入完整性校验。校验不通过时停止并记录到 `PENDING_DECISIONS.md`，不得产出设计文档。
 
-**Checkpoint — 此处必须停止，不得自动继续。**
+## Task 状态更新规则
 
-- 更新 `.workflow_state`：`checkpoint=spec_confirmation`, `requires_user_confirmation=true`, `user_confirmed=false`, `confirmation_type=approve_spec`
-- 用 `AskUserQuestion` 询问用户："Spec 是否确认？"
-- 选项：确认进入设计 / 需要修改 / 跳过设计直接编码
-- 用户选择前，不得调用任何 Agent、不得写入任何设计文档、不得开始编码。
-- 即使用户觉得 spec 很完美，也必须等用户确认。
-- **用户确认后**，更新 `.workflow_state`：`user_confirmed=true`, `requires_user_confirmation=false`, `current_phase=design`
+主控 Agent 必须在以下时机更新 `.workflow_state` 的 task 字段：
 
----
+1. **进入新阶段时**：初始化 `task_stack`（将该阶段所有子任务列出，第一个标记 `in_progress`，其余 `pending`），更新 `current_task`。
+2. **完成一个子任务时**：更新 `last_completed_task`（刚完成的）、`current_task`（下一个）、`task_stack`（完成项标记 `completed`，下一项标记 `in_progress`）、`next_action`、`resume_context`、`updated_at`。
+3. **调用子 Agent 前**：更新 `next_action` 和 `resume_context`，确保子 Agent 返回后能从 `resume_context` 继续。子 Agent 调用完成后立即更新 `current_task` 进度。
+4. **阶段结束时**：清空 `task_stack`（所有项 `completed`），将阶段信息追加到 `phase_history`（含 `phase`、`completed_at`、`output`），清空 `current_task` 为下一阶段做准备。
+5. **遇到阻塞时**：更新 `resume_context` 记录阻塞原因和下一步，写入 `PENDING_DECISIONS.md`。
 
-<!-- PHASE: design -->
-### Phase: 设计（standard/strict）
+更新粒度：每个子任务完成后更新一次（而非每个 tool call）。
 
-1. `search-first` 检查已有能力和依赖
-2. `codebase-researcher` → `03_CODEBASE_RESEARCH.md`
-3. 涉及后端 → `backend-designer` → `04_BACKEND_DESIGN.md`
-4. 涉及前端 → `frontend-designer` → `05_FRONTEND_DESIGN.md`
-5. 涉及接口/DB → `data-contract-designer` → `06_DATA_CONTRACT.md`
+`resume_context` 约束：≤200 tokens，精炼且可执行。内容必须包含：当前在做什么、已做到哪一步、下一步具体操作、上次调用的 Agent 和关键上下文。
 
-**Checkpoint**：
+## 阶段路由
 
-1. 设计文档产出完整 → 逐条对照 `02_SPEC.md` 第 11 节 Req ID，检查每个 Req ID 是否有设计覆盖。
-2. 有未覆盖项 → 标注到 `.workflow_state` 的 `uncovered_req_ids`，补设计或标记为"已知缺口"后进入计划。
-3. 全部覆盖 → 进入计划。
-4. 证据不足 → 回到调研。
+### requirement
 
----
+1. 创建 change workspace。
+2. 将用户原始需求写入 `00_原始需求.md`。
+3. 判断 profile；不确定时让用户选择。
+4. 更新 `.workflow_state`：`current_phase=requirement`，`current_task="创建 change workspace"`，`last_completed_task=""`，`task_stack` 初始化为单任务。
 
-<!-- PHASE: plan -->
-### Phase: 计划（standard/strict）
+### prd
 
-1. `implementation-planner` → `07_IMPLEMENTATION_PLAN.md`
-2. `test-planner` → `08_TEST_PLAN.md`
-3. 验证覆盖：检查 `.workflow_state` 的 `uncovered_req_ids`，确认 `07_IMPLEMENTATION_PLAN.md` 第 12 节和 `08_TEST_PLAN.md` 第 12 节覆盖了所有 Req ID。
+1. 使用 `prd-check-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `00_原始需求.md`: required，文件存在且非空
+3. 初始化 `task_stack`：
+   - "背景与目标"
+   - "用户角色与业务流程"
+   - "功能范围与非目标"
+   - "验收标准与异常/边界场景"
+   - "Req ID 覆盖映射与下游依赖"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `product-discovery-analyst` 产出 `01_PRD产品需求.md`。
+4. 每完成一个子任务更新 `current_task`、`last_completed_task`、`task_stack`、`next_action`、`resume_context`。
+5. 触发 `prd_confirmation`。
 
-**Checkpoint — 此处必须停止，不得自动继续。**
+### engineering_spec
 
-- 更新 `.workflow_state`：`checkpoint=plan_confirmation`, `requires_user_confirmation=true`, `user_confirmed=false`, `confirmation_type=approve_implementation_plan`
-- 用 `AskUserQuestion` 询问用户："实施计划是否确认？"
-- 选项：确认开始编码 / 需要修改计划
-- 用户选择前，不得修改任何业务代码、不得运行任何构建命令。
-- `uncovered_req_ids` 非空时，不得展示"确认开始编码"选项，必须先解决未覆盖项。
-- 即使你觉得计划很完善，也必须等用户确认。
-- **用户确认后**，更新 `.workflow_state`：`user_confirmed=true`, `requires_user_confirmation=false`, `current_phase=coding`
+1. 使用 `engineering-spec-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `00_原始需求.md`: required，文件存在且非空
+   - `01_PRD产品需求.md`: required，第 8 节"业务流程"和第 10 节"验收标准"非空
+3. 初始化 `task_stack`：
+   - "本次实现范围与不实现范围"
+   - "功能需求与权限规则"
+   - "数据规则与异常边界场景"
+   - "验收标准"
+   - "Req ID 分配与覆盖映射"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `product-spec-analyst` 产出 `02_工程需求规格.md`。
+4. 每完成一个子任务更新 task 跟踪字段。
+5. 触发 `engineering_spec_confirmation`。
 
----
+### research
 
-<!-- PHASE: coding -->
-### Phase: 编码（所有 profile）
+1. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required，第 5 节"功能需求"非空，至少 1 个 REQ-xxx
+2. 初始化 `task_stack`：
+   - "定位相似模块与可复用 API"
+   - "分析模块边界与依赖方向"
+   - "输出 search-first 结论（adopt/wrap/build/defer）"
+   第一项标记 `in_progress`。
+3. 更新 `current_task`，调用 `codebase-researcher` 产出 `03_代码库调研.md`。
+4. 每完成一个子任务更新 task 跟踪字段。
+5. 证据不足时回到工程规格或写入 `PENDING_DECISIONS.md`。
 
-- 只能修改实施计划允许的文件
-- Spring Boot 项目按需调用 `springboot-tdd`
+### backend_design
 
-**Checkpoint**：代码写完 → 进入 self-review。不得跳过 self-review 直接验证或交付。
+当 `affected_areas` 包含 `backend`、`database`、`integration`、`security` 时执行：
 
----
+1. 使用 `backend-design-check-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
+   - `03_代码库调研.md`: required，第 1 节"涉及模块"非空
+   - `openspec/specs/engineering/10-编码规范/Java后端编码规范.md`: conditional（文件存在则 required）
+   - `openspec/specs/engineering/10-编码规范/Spring事务与并发规范.md`: conditional（文件存在则 required）
+   - `openspec/specs/engineering/10-编码规范/SQL与数据库规范.md`: conditional（文件存在则 required）
+3. 初始化 `task_stack`：
+   - "模块依赖与边界分析"
+   - "Controller/Service/Repository 边界设计"
+   - "DTO/VO/Entity 关系与事务边界"
+   - "锁、并发、幂等策略"
+   - "SQL、索引、批量查询策略"
+   - "外部接口调用位置"
+   - "异常、日志、审计设计"
+   - "后端任务拆分与 Req ID 覆盖"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `backend-designer` 产出 `04_后端方案说明.md`。
+4. 按需调用 `java-reviewer`、`database-reviewer`、`security-reviewer` 做设计期审查。
+5. 每完成一个子任务更新 task 跟踪字段。
+6. 触发 `backend_design_confirmation`。
 
-<!-- PHASE: self-review -->
-### Phase: 自查（所有 profile）
+### frontend_design
 
-编码完成后，进入 `self_review` 阶段，输出 `<change-dir>/ai/10_SELF_REVIEW.md`。
+当前端页面、组件、路由、表单、表格、交互、样式、权限展示或浏览器行为受影响时执行：
 
-#### Base Self-review（所有项目必须执行）
+1. 使用 `frontend-design-check-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `01_PRD产品需求.md`: required，第 8 节"业务流程"非空
+   - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
+   - `03_代码库调研.md`: required，涉及前端模块的证据非空
+   - `openspec/specs/engineering/10-编码规范/前端编码与交互规范.md`: conditional（文件存在则 required）
+3. 初始化 `task_stack`：
+   - "页面入口、路由、菜单定位"
+   - "用户流程与各状态设计（成功/失败/空/加载/权限）"
+   - "组件复用方案"
+   - "表格/表单完整状态设计"
+   - "API 调用与状态刷新策略"
+   - "响应式与浏览器验证路径"
+   - "Req ID 覆盖映射"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `frontend-product-design` 和 `frontend-designer` 产出 `05_前端方案说明.md`。
+4. 调用 `frontend-ux-reviewer` 做设计期审查。
+5. 每完成一个子任务更新 task 跟踪字段。
+6. 触发 `frontend_design_confirmation`。
 
-```markdown
-# Self Review
+### contract
 
-## 1. 模式
+当前后端、前端、API、DTO/VO、事件、数据库字段、错误码、枚举、权限失败行为任一受影响时执行：
 
-- self_review_mode: base / enhanced
-- engineering_manifest: <path or empty>
+1. 使用 `contract-check-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required，第 5 节非空
+   - `03_代码库调研.md`: required，第 1 节非空
+   - `04_后端方案说明.md`: conditional（affected_areas 含 backend 则 required）
+   - `05_前端方案说明.md`: conditional（affected_areas 含 frontend 则 required）
+3. 初始化 `task_stack`：
+   - "API 路径与方法定义"
+   - "请求 DTO 与响应 VO 字段"
+   - "枚举值、错误码、权限失败行为"
+   - "分页、排序、过滤规则"
+   - "幂等、兼容与版本演进策略"
+   - "数据库/事件契约（如适用）"
+   - "Req ID 覆盖映射"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `data-contract-designer` 产出 `06_接口与数据契约.md`。
+4. 每完成一个子任务更新 task 跟踪字段。
+5. 触发 `contract_confirmation`。
 
-## 2. Req ID 覆盖自查
+### plan
 
-| Req ID | 代码改动 | 测试覆盖 | 状态 | 证据 |
-|--------|----------|----------|------|------|
+1. 使用 `implementation-plan-check-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required，第 5 节非空且 Req ID 列表完整
+   - `03_代码库调研.md`: required，第 1 节非空
+   - `04_后端方案说明.md`: conditional（affected_areas 含 backend 则 required）
+   - `05_前端方案说明.md`: conditional（affected_areas 含 frontend 则 required）
+   - `06_接口与数据契约.md`: conditional（affected_areas 含 contract 或 strict profile 则 required）
+   - `PENDING_DECISIONS.md`: conditional（如 pending_decisions_count > 0 则 required，检查无 pending 项）
+3. 初始化 `task_stack`：
+   - "总体策略与任务拆分"
+   - "后端任务规划"
+   - "前端任务规划"
+   - "数据与契约任务规划"
+   - "允许/不允许修改文件范围"
+   - "验证计划（单元/集成/API/前端/E2E）"
+   - "Req ID 覆盖校验"
+   第一项标记 `in_progress`。
+4. 更新 `current_task`，调用 `implementation-planner` 产出 `07_实施计划.md`。
+4. 调用 `test-planner` 产出 `08_验证计划.md`。
+5. 每完成一个子任务更新 task 跟踪字段。
+6. 触发 `plan_confirmation`。
 
-## 3. 实施计划范围自查
+### coding
 
-| 文件 | 是否在允许范围 | 说明 |
-|------|----------------|------|
+1. 主控 Agent 读取 `CONTEXT_PACKAGE.md`、`02_工程需求规格.md`、设计文档、契约、实施计划、验证计划。
+2. 根据 `07_实施计划.md` 的任务拆分初始化 `task_stack`，每个实施任务拆为"写测试 → 写实现 → 验证通过"三个子任务。
+3. **测试先行（强制）**：对每个实施任务，先从 `08_验证计划.md` 的测试用例表找到对应的测试用例，按以下 TDD 循环执行：
+   - 先写测试代码（Java 后端参考 `springboot-tdd` 规范：断言必须验证业务结果而不仅是"无异常"；前端写组件测试或浏览器验证用例）
+   - 运行新增测试，确认因功能缺失而失败（red phase）
+   - 写最小业务实现
+   - 运行测试，确认通过（green phase）
+   - 循环直到当前任务关联的所有测试用例覆盖完毕
+4. 只修改 `07_实施计划.md` 允许的文件。
+5. **每次修改业务代码前**更新 `resume_context`（当前在改什么文件、为什么、下一步），确保 `/clear` 后能从最近 safe point 恢复。
+6. 每完成一个实施任务（含其所有 TDD 子任务）更新 `current_task`、`last_completed_task`、`task_stack`、`next_action`、`resume_context`。
+7. designer/reviewer/planner 不直接改业务代码。主控 Agent 不自己跑测试验证——测试验证在下一个阶段由独立子 Agent 完成。
 
-## 4. Base Checklist
+### verification
 
-| Check ID | 检查项 | 结果 | 证据 | 修复记录 |
-|----------|--------|------|------|----------|
-| SR-BASE-001 | Req ID 均有覆盖或用户确认 | pass/fail |  |  |
-| SR-BASE-002 | 改动文件均在计划允许范围 | pass/fail |  |  |
-| SR-BASE-003 | 无明显异常处理遗漏（空 catch、吞异常、printStackTrace） | pass/fail |  |  |
-| SR-BASE-004 | 测试计划要求均有验证或说明未运行原因 | pass/fail |  |  |
-| SR-BASE-005 | 无明显危险模式（硬编码密钥、SQL 拼接用户输入、无分页大列表） | pass/fail |  |  |
-| SR-BASE-006 | CHANGE_METRICS.json 已更新 | pass/fail |  |  |
+验证阶段由独立子 Agent（test-planner 验证执行模式）全权负责。主控 Agent 不跑测试、不判断测试结果。
 
-## 5. Enhanced Checklist
+1. 使用 `verification-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，`current_phase=verification`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required
+   - `08_验证计划.md`: required
+   - `07_实施计划.md`: required
+3. 初始化 `task_stack`：
+   - "调用 test-planner 独立验证（覆盖率核对 + 测试执行 + 评估）"
+   - "处理验证结果（通过 / 修复 / 阻塞）"
+   - "前端浏览器验证（条件，由 frontend-verification-flow 执行）"
+   第一项标记 `in_progress`。
+4. 调用 `test-planner`（验证执行模式），由其独立完成覆盖率核对、测试执行和充分性评估，产出 `09_验证结果.md`。
+5. 子 Agent 返回后检查 Pre-mortem 校验通过标记；失败则补全输入重新调用。
+6. 前端改动同时调用 `frontend-verification-flow`，浏览器验证结果写入 `09_验证结果.md`。
+7. 评估结论为"充分"且无 P0/P1 失败 → 进入 review。
+8. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
+   - L1 构建/基础设施错误 → `build-error-resolver` → 重新调用 test-planner 验证
+   - L2 断言失败/覆盖缺口（首次）→ 主控修复 → **重新调用 test-planner 验证**（主控不自己跑测试）
+   - L3 同组件连续两次失败 → `code-reviewer` 诊断，主控不得继续修
+   - L4 连续三次失败 → 写 PENDING_DECISIONS，标记 blocked，人工介入
+9. 每完成一个子任务更新 task 跟踪字段。
 
-仅当 engineering.json 启用时填写；未启用时写 `not enabled`。
+### review
 
-## 6. 自查发现问题
+审查阶段由独立 reviewer agent 执行。主控 Agent 负责调用和汇总。
 
-## 7. 已修复问题
+1. 使用 `review-flow`。
+2. 更新 `CONTEXT_PACKAGE.md`，`current_phase=review`，填写 Input Manifest：
+   - `02_工程需求规格.md`: required
+   - `07_实施计划.md`: required
+   - `08_验证计划.md`: required
+   - `09_验证结果.md`: required
+   - `openspec/specs/engineering/30-质量与验证/禁止模式清单.md`: conditional（文件存在则 required）
+   - `openspec/specs/engineering/30-质量与验证/代码审查清单.md`: conditional（文件存在则 required）
+   - `openspec/specs/engineering/20-架构规范/模块边界规范.md`: conditional（文件存在则 required）
+3. 初始化 `task_stack`：
+   - "需求覆盖审查"
+   - "范围与证据审查"
+   - "代码质量审查（含反模式逐条对照 FORBID-xxx）"
+   - "测试设计审查（对照 AC 检查测试计划覆盖完整性）"
+   - "交叉引用检查（对比 2-3 个相似现有实现）"
+   - "专项审查（按需：Java/安全/数据库/前端）"
+   第一项标记 `in_progress`。
+4. 调用 `code-reviewer`（实现后模式），返回后检查 Pre-mortem 校验通过标记。
+5. 按需调用专项 reviewer：`java-reviewer`、`database-reviewer`、`security-reviewer`、`frontend-ux-reviewer`。每个返回后检查 Pre-mortem 校验通过标记。
+6. 汇总审查结论到 `11_审查报告.md`。
+7. 审查不通过 → 主控修复 → 重新走 verification → review（不跳过任何步骤）。
+8. 审查通过 → 进入 delivery。
+9. 每完成一个子任务更新 task 跟踪字段。
 
-## 8. 剩余风险
+### delivery
+
+1. 初始化 `task_stack`：
+   - "更新 CHANGE_METRICS.json"
+   - "发布说明"
+   - "经验沉淀（standard/strict）"
+   - "Agent 评估（standard/strict）"
+   第一项标记 `in_progress`。
+2. 更新 `CHANGE_METRICS.json`（从原 self_review 阶段迁入，记录本轮 change 的指标数据）。
+3. 产出 `12_发布说明.md`。
+4. standard/strict 产出 `13_经验沉淀.md` 和 `14_Agent评估.md`。
+5. 每完成一个子任务更新 task 跟踪字段。
+6. 所有 task 完成后，追加 `delivery` 到 `phase_history`。
+
+**注意**：`10_自查报告.md` 不再作为独立文档产出。原 self_review 的机械检查（Req ID 覆盖核对）由 test-planner 验证模式的覆盖率核对步骤承担，判断性检查（异常处理、危险模式）由 review 阶段的独立 reviewer 承担。
+
+### archive
+
+使用 `openspec-archive-change`。存在未确认问题、审查不通过、验证无证据、阻塞问题未修复时不得归档。
+
+## minimal 流程
+
+minimal 只执行：
+
+```text
+00_原始需求.md
+→ 03_代码库调研.md（轻量）
+→ 07_实施计划.md
+→ 08_验证计划.md（按需）
+→ coding（测试先行，TDD 循环）
+→ 09_验证结果.md（test-planner 轻量模式）
+→ 12_发布说明.md
 ```
 
-#### Enhanced Self-review（仅 manifest 启用时）
+minimal 不强制人工 checkpoint，但必须维护 `.workflow_state`、`CONTEXT_PACKAGE.md`、`CHANGE_METRICS.json` 和允许文件范围。minimal 下 test-planner 验证模式覆盖率核对可选，测试执行只跑目标测试。不强制 review 阶段。轻量 diff 自查由主控 Agent 直接对比变更和需求。
 
-当 `project_consistency_enabled=true` 且 `modules.selfReviewRules=true` 时，读取 `openspec/specs/engineering/` 下已存在的规则文件，将其中的检查映射追加到 `10_SELF_REVIEW.md`。如果 `engineering_mode=advisory`，只记录风险；如果 `engineering_mode=enforced`，确定性违反项必须修复或写入 `PENDING_DECISIONS.md` 后才能进入 verification。
+## Enhanced Flow
 
-#### Metrics
+如果项目存在 `openspec/specs/engineering/engineering.json` 且 `enabled=true`：
 
-所有 change 都写入或更新 `<change-dir>/ai/CHANGE_METRICS.json`：
-
-```json
-{
-  "schemaVersion": 1,
-  "changeId": "",
-  "profile": "minimal|standard|strict",
-  "projectConsistencyEnabled": false,
-  "engineeringMode": "off|advisory|enforced",
-  "counters": {
-    "checkpointBlocked": 0,
-    "scopeGuardBlocked": 0,
-    "dangerousCommandBlocked": 0,
-    "selfReviewIssuesFound": 0,
-    "selfReviewIssuesFixed": 0,
-    "verificationFailedRounds": 0,
-    "reviewBlockers": 0,
-    "pendingDecisionsCreated": 0,
-    "architectureOwnerDecisionsCreated": 0,
-    "sopCandidatesCreated": 0
-  },
-  "signals": []
-}
-```
-
-**Checkpoint**：Base checklist 全部完成，确定性问题已修复或记录为剩余风险，`CHANGE_METRICS.json` 已更新 → 进入 verification。
-
----
-
-<!-- PHASE: verification -->
-### Phase: 验证（所有 profile）
-
-#### 验证执行
-
-```
-运行验证命令 → 读取测试结果 → 判定：
-├── 全部通过（0 fail, 0 error）
-│   └── → 记录 09_TEST_RESULT.md → Checkpoint → 进审查
-│
-├── 部分失败 → 对每个失败分类：
-│   ├── P0 阻断（编译不过/启动不了/DB连不上）
-│   │   └── 必须当轮修掉，否则不计数
-│   ├── P1 逻辑 bug（结果和 Spec 不符/计算公式错/NPE）
-│   │   └── 修，计入本轮
-│   └── P2 兼容/优化（旧版API过期/性能不够/日志缺失）
-│       └── 修或记录到 OPEN_ISSUES，不阻断
-│
-└── 全部失败 → 检查环境/依赖 → 环境问题不计轮次
-```
-
-#### 循环收敛机制
-
-```
-Round N 结束 → 更新 .workflow_state → 判定下一步：
-
-1. P0/P1 全部清零？
-   → 进审查，即使还有 P2 未修（P2 写入 OPEN_ISSUES.md）
-
-2. 还有 P0/P1？
-   ├── round < 3 → 回编码阶段继续修
-   │   但：同一组件连续 2 轮出问题 → 不是 bug，是设计缺陷
-   │   → 回退设计阶段更新 Spec/设计文档
-   └── round = 3 → 强制出口
-       写 OPEN_ISSUES.md 列出残留 P1
-       写 BUGFIX.md 汇总 3 轮修复记录
-       进审查
-```
-
-#### BUGFIX.md 格式（每轮追加，轻量）
-
-```markdown
-## Round 1 (14:30)
-- 修: precision 列名 MySQL 保留字冲突 → 改 precision_val, Entity字段同步
-- 修: EvalItem 缺 index 字段导致 RAGAS 批量500 → 加 index 字段
-- 结果: 158 tests pass, 0 fail
-- 剩余: ContextRelevance 偶发返回 None
-
-## Round 2 (15:00)  
-- 修: ContextRelevance None → float(None)兜底为0
-- 结果: 163 tests pass, 0 fail, 端到端检索+生成全通过
-- 剩余: AnswerRelevancy 缺embeddings（design issue，回退设计）
-```
-
-不要求格式完美。**目的不是写文档，是在上下文被 bug 淹没时能一眼看到"我修到哪了"。**
-
-#### 设计缺陷识别（"异味检测"）
-
-以下信号出现时，判定为设计问题而非 bug，**不应再循环修复**：
-
-| 信号 | 示例 |
-|------|------|
-| 同一个类/方法连续 2 轮都在改 | RAGAS app.py 三轮都在改 key 映射 |
-| 修复引入了新问题 | 改了 recall 去重 → NDCG 崩了 |
-| 修复依赖外部环境变化 | "等 DashScope SDK 更新后就好了" |
-| 同样的 fix pattern 重复出现 | 3 个不同地方都缺 null 检查 |
-
-判定为设计问题后 → **回退到设计阶段**更新对应设计文档，不是继续修代码。
-
-#### Checkpoint
-
-全部 P0/P1 清零 或 round=3 → 进审查。minimal profile 可执行简版只读 diff review 后进交付。
-
----
-
-<!-- PHASE: review -->
-### Phase: 审查（standard/strict）
-
-1. 需求覆盖检查：逐条核对 Req ID → 代码改动 → 测试覆盖。有未覆盖项且无用户确认 → 审查结论"不通过"，不得继续。
-2. `code-reviewer` → `11_REVIEW_REPORT.md`（旧 change 可保留 `10_REVIEW_REPORT.md`）
-3. 按需：`java-reviewer` / `database-reviewer` / `security-reviewer`
-4. 阻塞问题 → 修复后回到验证阶段（不计入编码轮次）
-5. 非阻塞问题 → 记录到审查报告，不阻断
-6. 如果 `project_consistency_enabled=true` 且 `modules.consistencyReview=true`，生成 `<change-dir>/ai/PROJECT_CONSISTENCY_REVIEW.md`：
-   - `engineering_mode=advisory`：记录风险，不阻断。
-   - `engineering_mode=enforced`：不通过时不得进入归档。
-
-**Checkpoint**：覆盖检查和代码审查均通过 → 进入交付。
-
----
-
-<!-- PHASE: delivery -->
-### Phase: 交付（standard/strict/learning）
-
-1. `12_RELEASE_NOTE.md`（旧 change 可保留 `11_RELEASE_NOTE.md`）
-2. 如有遗留问题 → `OPEN_ISSUES.md`
-3. `learning-curator` → `13_LESSONS_LEARNED.md` + `14_AGENT_EVAL.md`（旧 change 可保留 `12/13` 编号）
-4. Lessons 中必须包含 SOP candidate 小节；Enhanced Flow 启用且 `modules.sopRegistry=true` 时，才更新项目级 `sop-registry.md`。
-
-**Checkpoint**：所有文档产出 → 进入归档。
-
----
-
-<!-- PHASE: archive -->
-### Phase: 归档（standard/strict）
-
-- 调用 `openspec-archive-change`
-- 清理 `.workflow_state`（标记 archived）
-
-归档前如果 `consistency_review_required=true`：
-
-- `engineering_mode=advisory`：允许归档，但 release note / lessons 必须记录一致性风险。
-- `engineering_mode=enforced`：`PROJECT_CONSISTENCY_REVIEW.md` 未通过不得归档。
-
----
-
-## minimal Profile（轻量版）
-
-小 bug 和小改动，且满足准入条件（见上方决策树）。
-
-阶段：需求简版 → 简版计划 → 编码 → self-review → 目标验证 → 交付。
-
-必需产出：`00_REQUIREMENT.md`（可一句话）、`07_IMPLEMENTATION_PLAN.md`（简版）、`10_SELF_REVIEW.md`、`CHANGE_METRICS.json`、`12_RELEASE_NOTE.md`（可一段话）。
-
-约束：代码证据（改了什么文件）、验证命令和结果。
-
-**minimal 也需维护 `.workflow_state`**：
-- 开始编码前：`current_phase=coding`, `requires_user_confirmation=false`, `user_confirmed=true`
-- 进入自查时：`current_phase=self_review`, `self_review_mode=base`
-- 进入验证时：`current_phase=verification`
-- 完成时：`current_phase=delivery`
-
-## 编码↔验证 循环收敛示例
-
-```
-Round 1: 编译通过，158 tests pass, 4 fail → Bug修复 × 2
-Round 2: 编译通过，162 tests pass, 0 fail → 全部通过 → 进审查
-```
-
-```
-Round 1: 编译通过，测试全过，但生成评估分数异常
-  → 判定为需求变更（生成评估设计有问题）
-  → 回退设计阶段，更新 04_BACKEND_DESIGN.md
-  → 重新进入编码
-```
-
-```
-Round 3: 163 tests pass，但 ContextRelevance 偶发 0
-  → 判定为 Bug修复，但 3 轮已满
-  → 强制出口，写 OPEN_ISSUES.md："ContextRelevance 批量偶发 0，已加 None→0 兜底"
-  → 进审查
-```
+- `mode=advisory`：记录风险，不阻断归档。
+- `mode=enforced`：确定性违反项、项目一致性 review 失败、未处理 owner decision 均阻断进入下一门禁。
+- 未启用 manifest 时，不得强制读取工程事实库，不得生成阻断性一致性结论。

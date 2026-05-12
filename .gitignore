@@ -13,9 +13,35 @@ __pycache__/
 *.swp
 *.swo
 
-# Backup files
-*.backup.*
-*.bak
-
 # OS
 Thumbs.db
+
+# === 敏感信息 —— 绝不能提交 ===
+settings.json
+settings.local.json
+.env
+.env.*
+*.token
+*secret*
+*credential*
+
+# === Claude Code 运行时数据 —— 私人/瞬态 ===
+history.jsonl
+.last-cleanup
+file-history/
+sessions/
+session-env/
+shell-snapshots/
+paste-cache/
+cache/
+tasks/
+telemetry/
+downloads/
+backups/
+memory/
+plugins/
+plans/
+proposals/
+projects/
+.tmp-validation/
+.claude/

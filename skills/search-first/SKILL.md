@@ -25,16 +25,21 @@ description: Use when adding new functionality, abstractions, libraries, tools, 
 
 ## Output
 
-建议写入 `<change-dir>/ai/03_CODEBASE_RESEARCH.md`：
+建议写入 `<change-dir>/ai/03_代码库调研.md`：
 
-```text
+```markdown
 ## Search-first 结论
 
 ### 问题定义
+
 ### 已有项目能力
+
 ### 可复用依赖或工具
+
 ### 外部成熟方案
+
 ### 决策：adopt / wrap / build / defer
+
 ### 证据
 ```
 

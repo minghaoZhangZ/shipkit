@@ -6,13 +6,13 @@ origin: ECC-adapted
 
 # Spring Boot Verification
 
-`verification-flow` 的 Spring Boot 深度实现，结果写入 `<change-dir>/ai/09_TEST_RESULT.md`。
+`verification-flow` 的 Spring Boot 深度实现，结果写入 `09_验证结果.md`。
 
 ## Command Discovery
 
 优先按项目已有方式运行：
 
-1. `README`
+1. README
 2. CI 配置
 3. `mvnw` / `pom.xml`
 4. `gradlew` / `build.gradle`
@@ -42,13 +42,7 @@ mvn verify
 ./gradlew check
 ```
 
-如项目配置了静态检查，运行：
-
-```bash
-./mvnw checkstyle:check
-./mvnw spotbugs:check
-./mvnw pmd:check
-```
+如果项目配置了静态检查，运行实际存在的 checkstyle、spotbugs 或 pmd 命令。
 
 ## Strict Verification
 
@@ -60,41 +54,26 @@ mvn verify
 - 幂等和并发相关测试。
 - 回滚方案检查。
 
-常用只读扫描：
-
-```bash
-grep -rn "System\\.out\\.print" src/main --include="*.java"
-grep -rn "printStackTrace" src/main --include="*.java"
-grep -rn "e\\.getMessage()" src/main --include="*.java"
-grep -rn "allowedOrigins.*\\*" src/main --include="*.java"
-```
-
 ## Result Format
 
-写入 `<change-dir>/ai/09_TEST_RESULT.md`：
+写入 `09_验证结果.md`：
 
-```text
+```markdown
 ## Spring Boot Verification
 
 Profile: minimal / standard / strict
 
 Commands:
-- <command>
 
 Exit Codes:
-- <command>: <code>
 
 Result:
-- PASS / FAIL
 
 Failures:
-- ...
 
 Skipped:
-- ...
 
 Remaining Risk:
-- ...
 ```
 
 ## Stop Rules

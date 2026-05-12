@@ -19,14 +19,30 @@ MARKERS = (".git", "pom.xml", "build.gradle", "package.json", "openspec", "READM
 GLOBAL_CONFIG_NAMES = {".claude", ".codex"}
 TEMPLATE_FILES = (
     "engineering.json",
-    "architecture-principles.md",
-    "dependency-rules.md",
-    "domain-concepts.md",
-    "module-boundaries.md",
-    "reusable-apis.md",
-    "forbidden-patterns.md",
-    "sop-registry.md",
-    "metrics-ledger.jsonl",
+    "00-总则/行为准则.md",
+    "00-总则/需求澄清与上下文规则.md",
+    "10-编码规范/Java后端编码规范.md",
+    "10-编码规范/Spring事务与并发规范.md",
+    "10-编码规范/SQL与数据库规范.md",
+    "10-编码规范/前端编码与交互规范.md",
+    "10-编码规范/API契约与DTO-VO规范.md",
+    "10-编码规范/通用空值与equals规范.md",
+    "20-架构规范/分层架构规范.md",
+    "20-架构规范/模块边界规范.md",
+    "20-架构规范/依赖方向规范.md",
+    "20-架构规范/领域概念与命名规范.md",
+    "20-架构规范/可复用能力规范.md",
+    "30-质量与验证/单元测试规范.md",
+    "30-质量与验证/验证命令与测试证据规范.md",
+    "30-质量与验证/代码审查清单.md",
+    "30-质量与验证/禁止模式清单.md",
+    "40-交付流程/需求拆解规范.md",
+    "40-交付流程/实施计划规范.md",
+    "40-交付流程/变更范围控制规范.md",
+    "40-交付流程/发布与回滚规范.md",
+    "50-经验沉淀/SOP注册表.md",
+    "50-经验沉淀/问题复盘规范.md",
+    "50-经验沉淀/指标台账.jsonl",
 )
 
 
@@ -92,6 +108,7 @@ def initialize(target: Path, dry_run: bool = False) -> dict[str, object]:
             continue
         created.append(str(target_file))
         if not dry_run:
+            target_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target_file)
 
     manifest_errors: list[str] = []

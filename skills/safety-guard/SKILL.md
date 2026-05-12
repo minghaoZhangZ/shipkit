@@ -5,7 +5,7 @@ description: Use when a task may run destructive commands, edit broad file range
 
 # Safety Guard
 
-把高风险操作从”提醒”升级成”门禁”。
+把高风险操作从“提醒”升级成“门禁”。
 
 ## Guarded Operations
 
@@ -14,15 +14,16 @@ description: Use when a task may run destructive commands, edit broad file range
 - `git reset --hard`
 - 丢弃工作区的大范围 checkout
 - 递归删除项目目录
-- `DROP TABLE` / `DROP DATABASE`
+- `DROP TABLE` / `DROP DATABASE` / `TRUNCATE TABLE`
 - 强制推送
 - 跳过 git hooks：`--no-verify`
 - 修改 linter、formatter、CI、安全配置来绕过失败
 - 数据库不可逆迁移
+- 生产表单提交、上传私有文件、删除数据、修改权限、发送消息
 
 ## Edit Scope Rule
 
-实现阶段必须遵守 `<change-dir>/ai/07_IMPLEMENTATION_PLAN.md` 的允许修改范围。
+实现阶段必须遵守 `<change-dir>/ai/07_实施计划.md` 的允许修改范围。
 
 如果需要修改范围外文件：
 
@@ -31,19 +32,24 @@ description: Use when a task may run destructive commands, edit broad file range
 3. 更新实施计划。
 4. 等待用户确认。
 
+## Checkpoint Rule
+
+当 `.workflow_state` 中 `requires_user_confirmation=true` 且 `user_confirmed=false`：
+
+- 只能写 `openspec/changes/*/ai/` 下的 AI 文档。
+- 不得修改业务代码。
+- 不得运行构建、测试、安装依赖、提交等修改性命令。
+
 ## Hook Roadmap
 
-第一阶段：
+当前已启用：
 
-- 等待通知 beep。
+- `checkpoint-guard.py`：阻止未确认 checkpoint 下的业务代码和构建/测试。
+- `scope-guard.py`：阻止 coding/verification 阶段修改计划外文件。
+- `dangerous-command-guard.py`：阻止危险命令。
 
-第二阶段：
+后续可增强：
 
-- 阻止危险命令。
 - Java 轻量质量扫描。
-- 检查测试结果是否记录。
-
-第三阶段：
-
+- 测试结果记录检查。
 - 项目级 learning observation。
-- profile-aware quality gate。

@@ -1,16 +1,46 @@
 {
-  "version": 1,
+  "version": 2,
   "profiles": {
     "minimal": {
-      "description": "Small bug fixes and narrow changes with code evidence, scoped edits, base self-review, per-change metrics, and targeted verification.",
+      "description": "Small bug fixes and narrow changes with code evidence, scoped edits, base self-review, per-change metrics, and targeted verification. It skips role checkpoints unless risk conditions force upgrade.",
       "requiredSkills": ["openspec-new-change", "quick-fix-flow", "verification-flow"],
       "requiredAgents": ["codebase-researcher", "code-reviewer"],
-      "optionalAgents": ["java-build-resolver", "java-reviewer"],
-      "qualityGate": "Run base self-review, record CHANGE_METRICS, then run targeted tests or explain why no runnable test exists."
+      "optionalAgents": ["java-build-resolver", "java-reviewer", "frontend-ux-reviewer"],
+      "qualityGate": "Run base self-review, record CHANGE_METRICS, then run targeted tests or explain why no runnable test exists.",
+      "checkpoints": [],
+      "upgradeToStandardWhen": [
+        "permissions change",
+        "transaction or concurrency change",
+        "external integration",
+        "database change",
+        "API contract change",
+        "frontend and backend both change",
+        "unclear product semantics",
+        "more than three files expected to change"
+      ],
+      "upgradeToStrictWhen": [
+        "security",
+        "money",
+        "orders",
+        "inventory",
+        "migration",
+        "sensitive data",
+        "irreversible operation"
+      ]
     },
     "standard": {
-      "description": "Default product-to-test delivery workflow for normal product requirements, with base self-review and optional project consistency governance.",
-      "requiredSkills": ["openspec-new-change", "product-to-test-flow", "verification-flow", "learn-from-delivery", "openspec-archive-change"],
+      "description": "Default product-to-test delivery workflow for normal product requirements with role-based PRD, engineering spec, design, contract, plan, self-review, verification, and review gates.",
+      "requiredSkills": [
+        "openspec-new-change",
+        "product-to-test-flow",
+        "prd-check-flow",
+        "engineering-spec-flow",
+        "implementation-plan-check-flow",
+        "verification-flow",
+        "review-flow",
+        "learn-from-delivery",
+        "openspec-archive-change"
+      ],
       "requiredAgents": [
         "product-discovery-analyst",
         "product-spec-analyst",
@@ -20,28 +50,73 @@
         "code-reviewer",
         "learning-curator"
       ],
-      "optionalAgents": ["backend-designer", "frontend-designer", "data-contract-designer", "java-reviewer"],
-      "qualityGate": "Implementation plan and test plan must be confirmed before coding; self-review and verification evidence are required before review."
+      "optionalSkills": [
+        "backend-design-check-flow",
+        "frontend-design-check-flow",
+        "contract-check-flow",
+        "frontend-product-design",
+        "frontend-verification-flow"
+      ],
+      "optionalAgents": [
+        "backend-designer",
+        "frontend-designer",
+        "frontend-ux-reviewer",
+        "data-contract-designer",
+        "java-reviewer",
+        "database-reviewer",
+        "security-reviewer"
+      ],
+      "checkpoints": [
+        "prd_confirmation",
+        "engineering_spec_confirmation",
+        "plan_confirmation"
+      ],
+      "qualityGate": "All required role checkpoints must be confirmed before coding; self-review and verification evidence are required before review."
     },
     "strict": {
-      "description": "High-risk workflow for auth, money, orders, inventory, database migrations, concurrency, external integrations, or security-sensitive changes.",
-      "requiredSkills": ["openspec-new-change", "strict-product-to-test-flow", "verification-flow", "review-flow", "learn-from-delivery", "openspec-archive-change"],
+      "description": "High-risk workflow for auth, money, orders, inventory, database migrations, concurrency, external integrations, files, webhooks, sensitive data, or irreversible operations.",
+      "requiredSkills": [
+        "openspec-new-change",
+        "strict-product-to-test-flow",
+        "product-to-test-flow",
+        "engineering-spec-flow",
+        "contract-check-flow",
+        "implementation-plan-check-flow",
+        "verification-flow",
+        "review-flow",
+        "learn-from-delivery",
+        "openspec-archive-change"
+      ],
       "requiredAgents": [
         "codebase-researcher",
         "data-contract-designer",
+        "implementation-planner",
         "test-planner",
         "code-reviewer",
         "database-reviewer",
         "security-reviewer"
       ],
-      "optionalAgents": ["java-reviewer", "java-build-resolver"],
-      "qualityGate": "Requires rollback plan, self-review, security review, database review when applicable, and recorded verification evidence."
+      "optionalSkills": [
+        "prd-check-flow",
+        "backend-design-check-flow",
+        "frontend-design-check-flow",
+        "frontend-product-design",
+        "frontend-verification-flow"
+      ],
+      "optionalAgents": ["backend-designer", "frontend-designer", "java-reviewer", "java-build-resolver", "frontend-ux-reviewer"],
+      "checkpoints": [
+        "engineering_spec_confirmation",
+        "contract_confirmation",
+        "plan_confirmation"
+      ],
+      "qualityGate": "Requires confirmed engineering spec, contract, rollback plan, self-review, security review, database review when applicable, and recorded verification evidence."
     },
     "learning": {
       "description": "Post-delivery learning workflow for extracting reusable project-scoped instincts and promotion candidates.",
       "requiredSkills": ["learn-from-delivery", "openspec-archive-change"],
       "requiredAgents": ["learning-curator"],
       "optionalAgents": [],
+      "checkpoints": [],
       "qualityGate": "Every lesson must include trigger, evidence, metrics signal, reuse path, SOP candidate when applicable, and promotion recommendation."
     }
   }

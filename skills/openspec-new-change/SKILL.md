@@ -16,47 +16,30 @@ description: Use when starting a new requirement, feature, bugfix, refactor, sec
 示例：
 
 ```text
-2026-04-30-feature-recommend-增加推荐理由
-2026-04-30-bugfix-order-修复状态并发
+2026-05-12-feature-order-增加库存锁定校验
+2026-05-12-bugfix-ui-修复列表重复提交
 ```
 
 ## Flow
 
 1. 根据需求生成 `<change-id>`。
-2. 确保 OpenSpec 基础目录存在（老项目自动 bootstrap）：
+2. 确保 OpenSpec 基础目录存在：
 
-```bash
-# 项目根目录下执行
-mkdir -p openspec/changes/archive
-mkdir -p openspec/specs
-mkdir -p openspec/_templates/change
-mkdir -p openspec/_templates/ai
-# 模板不存在时自动创建最小 metadata.json
-test -f openspec/_templates/change/metadata.json || cat > openspec/_templates/change/metadata.json << 'TMPL'
-{
-  "id": "",
-  "title": "",
-  "type": "feature",
-  "domain": "",
-  "action": "",
-  "status": "draft",
-  "createdAt": "",
-  "profile": "standard",
-  "owner": ""
-}
-TMPL
+```text
+openspec/changes/archive
+openspec/specs
+openspec/_templates/change
+openspec/_templates/ai
 ```
 
 3. 创建 change 目录：
 
 ```text
-mkdir -p openspec/changes/<change-id>/ai
-mkdir -p openspec/changes/<change-id>/specs
+openspec/changes/<change-id>/ai
+openspec/changes/<change-id>/specs
 ```
 
-4. 复制模板（模板缺失时跳过，Agent 直接写文件）：
-
-4. 更新 `metadata.json`：
+4. 创建或更新 `metadata.json`：
 
 ```json
 {
@@ -72,11 +55,51 @@ mkdir -p openspec/changes/<change-id>/specs
 }
 ```
 
-5. 将原始需求写入 `<change-dir>/ai/00_REQUIREMENT.md`。
+5. 将原始需求写入 `<change-dir>/ai/00_原始需求.md`。
+6. 初始化 `<change-dir>/ai/CONTEXT_PACKAGE.md`。
+7. 初始化 `<change-dir>/ai/.workflow_state`，使用以下完整 schema（新字段初始化为空）。所有 AI 文档统一使用中文 canonical 名。
+
+```yaml
+schema_version: "1.0"
+change_id: "<change-id>"
+profile: minimal
+current_phase: requirement
+current_task: ""
+last_completed_task: ""
+next_action: ""
+task_stack: []
+phase_history: []
+resume_context: ""
+checkpoint: ""
+requires_user_confirmation: false
+user_confirmed: true
+confirmation_type: ""
+confirmation_role: ""
+confirmation_docs: []
+confirmed_checkpoints: []
+required_checkpoints: []
+affected_areas: []
+context_package: "CONTEXT_PACKAGE.md"
+trace_matrix_status: pending
+round: 0
+max_rounds: 3
+pending_decisions_count: 0
+project_consistency_enabled: false
+engineering_manifest: ""
+engineering_mode: "off"
+verification_mode: "independent"
+metrics_mode: "change_only"
+sop_mode: "candidate_only"
+consistency_review_required: false
+architecture_owner_required: false
+verification_status: "pending"
+verification_issue_count: 0
+metrics_recorded: false
+created_at: "<YYYY-MM-DD>"
+updated_at: "<YYYY-MM-DD>"
+```
 
 ## 下一步
-
-根据需求类型选择 flow：
 
 - 常规需求：调用 `product-to-test-flow`
 - 高风险需求：调用 `strict-product-to-test-flow`

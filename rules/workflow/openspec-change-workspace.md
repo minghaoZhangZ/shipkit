@@ -12,7 +12,7 @@
 
 当前需求目录称为 `<change-dir>`：`openspec/changes/<change-id>`
 
-AI 阶段文档统一写入 `<change-dir>/ai/`。新流程包含 `10_SELF_REVIEW.md`、`CHANGE_METRICS.json`，并将 review / release / lessons / eval 文档顺延到 11-14；旧 change 可保留 00 到 13 的历史编号。
+AI 阶段文档统一写入 `<change-dir>/ai/`。新流程不再产出 `10_自查报告.md`（已废弃），其机械检查并入 verification 阶段、判断性检查并入 review 阶段。文档编号 09/11/12/13/14 保留，10 跳号。旧 change 可保留原有 00 到 14 的历史编号。
 
 模板来源：`openspec/_templates/change/` 和 `openspec/_templates/ai/`
 模板缺失时：Agent 直接创建文件，不从模板复制。首次使用会自动 bootstrap openspec 目录结构。

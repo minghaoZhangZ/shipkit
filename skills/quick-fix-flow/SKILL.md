@@ -3,61 +3,67 @@ name: quick-fix-flow
 description: Use when a small bug, narrow refactor, simple API adjustment, small UI fix, or focused failing test needs a lightweight workflow.
 ---
 
-你要执行小需求或小 bug 修复流程。
+# Quick Fix Flow
 
-适用范围：
+用于 minimal profile。它不强制 PRD/设计 checkpoint，但仍必须保留代码证据、允许文件范围、自查、验证和 metrics。
 
-- 小 bug
-- 简单接口调整
-- 简单文案或样式修复
-- 小范围重构
-- 明确失败测试修复
+## 准入条件
 
-## 前置条件
+必须同时满足：
 
-如果还没有 `<change-dir>`，先调用 `openspec-new-change` 创建工作区。
+- 不改接口契约、数据库、权限、事务/并发、外部系统。
+- 不涉及安全、金钱、订单、库存、迁移、敏感数据、不可逆操作。
+- 不涉及前后端同时改。
+- 产品语义清楚。
+- 预计改动文件不超过 3 个。
+- 可用一个目标测试或最小复现路径验证。
+- 如改动需要新增测试用例，应升级到 standard（minimal 不新增测试基础设施）。
 
-## 工作流
+任一不满足，升级 `product-to-test-flow` 的 standard 或 strict。
 
-1. 简述问题和预期结果，写入 `<change-dir>/ai/00_REQUIREMENT.md`。
-2. 创建/更新 `<change-dir>/ai/.workflow_state`：
-   ```yaml
-   change_id: "<change-id>"
-   profile: minimal
-   current_phase: plan
-   requires_user_confirmation: false
-   user_confirmed: true
-   project_consistency_enabled: false
-   engineering_manifest: ""
-   engineering_mode: "off"
-   self_review_mode: "base"
-   metrics_mode: "change_only"
-   sop_mode: "candidate_only"
-   consistency_review_required: false
-   architecture_owner_required: false
-   ```
-3. 调用或执行只读代码库调研，输出到 `<change-dir>/ai/03_CODEBASE_RESEARCH.md`。
-4. 生成简版实施计划，输出到 `<change-dir>/ai/07_IMPLEMENTATION_PLAN.md`。
-5. 如涉及测试，更新 `<change-dir>/ai/08_TEST_PLAN.md`。
-6. 在 `07_IMPLEMENTATION_PLAN.md` 中保留“顺带重构受控出口”；minimal 默认空出口，除非用户明确确认。
-7. **进入编码前**更新 `.workflow_state`：`current_phase=coding`
-8. 只修改实施计划允许的文件。
-9. 编码完成后进入 self-review，更新 `.workflow_state`：`current_phase=self_review`, `self_review_mode=base`。
-10. 输出 `<change-dir>/ai/10_SELF_REVIEW.md`，至少检查 Req ID 覆盖、实施计划范围、异常处理、测试缺口、明显危险模式。
-11. 输出或更新 `<change-dir>/ai/CHANGE_METRICS.json`，记录 self-review 问题数、验证失败轮次、review 阻塞数等 per-change 指标。
-12. 执行 `verification-flow` 的 minimal 深度验证。更新 `.workflow_state`：`current_phase=verification`
-13. 更新 `<change-dir>/ai/09_TEST_RESULT.md`。
-14. 执行只读 diff review（自检，不调独立 Agent）。
-15. 需要时更新 `<change-dir>/ai/12_RELEASE_NOTE.md`（旧 change 可保留 `11_RELEASE_NOTE.md`）。
-16. 更新 `.workflow_state`：`current_phase=delivery`
+## 流程
 
-## 下一步
+1. 写入 `<change-dir>/ai/00_原始需求.md`。
+2. 创建/更新 `.workflow_state`：
 
-调用 `openspec-archive-change` 归档本次 change。
+```yaml
+schema_version: “1.0”
+change_id: “<change-id>”
+profile: minimal
+current_phase: plan
+current_task: “”
+last_completed_task: “”
+next_action: “”
+task_stack: []
+resume_context: “”
+requires_user_confirmation: false
+user_confirmed: true
+checkpoint: “”
+confirmed_checkpoints: []
+required_checkpoints: []
+affected_areas: []
+context_package: “CONTEXT_PACKAGE.md”
+trace_matrix_status: lightweight
+```
+
+3. 更新 `CONTEXT_PACKAGE.md`，声明 minimal、输入、输出合同、停止条件；填写 Input Manifest（minimal 判据可放宽：文件存在即为通过）。
+4. 执行只读代码库调研，调用 `codebase-researcher` 输出 `03_代码库调研.md`。返回后检查 Pre-mortem 校验通过标记。
+5. 初始化 `task_stack`（3-5 项），输出轻量 `07_实施计划.md`，必须包含第 7 节”允许修改的文件范围”。
+6. 按需输出 `08_验证计划.md`；小 UI bug 必须记录页面、组件、复现路径、视口和预期结果。
+7. 更新 `.workflow_state`：`current_phase=coding`，`current_task` 为第一个实施任务，`next_action` 为具体操作。
+8. 主控 Agent 只修改计划允许的文件，每完成一个 task 更新 `current_task`、`last_completed_task`、`next_action`、`resume_context`。如有测试用例，优先写测试再写实现。
+9. 调用 `test-planner` 验证模式（轻量：覆盖率核对可选，只执行目标测试命令），产出 `09_验证结果.md`。前端改动同时执行 `frontend-verification-flow`。
+10. 执行轻量只读 diff review，由主控 Agent 直接对比变更和需求（不强制调用独立 reviewer）。
+11. 更新 `CHANGE_METRICS.json`。
+12. 输出 `12_发布说明.md`，更新 `.workflow_state`：`current_phase=delivery`。
+
+**注意**：minimal 不再产出 `10_自查报告.md`。
 
 ## 禁止事项
 
-- 不要因为是小需求就跳过代码证据。
-- 不要因为是小需求就跳过 self-review 和 CHANGE_METRICS。
-- 不要改无关文件。
-- 不要扩大重构范围。
+- 不要因为 minimal 就跳过代码证据。
+- 不要跳过 `CHANGE_METRICS.json`。
+- 不要修改计划外文件。
+- 不要扩大顺带重构范围。
+- UI 修复不能只凭肉眼判断完成，必须记录浏览器验证路径或无法运行原因。
+- 主控 Agent 不自己跑测试判断”通过了”——必须由 test-planner 验证模式执行并记录。
