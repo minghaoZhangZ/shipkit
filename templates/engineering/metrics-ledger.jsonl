@@ -1,0 +1,1 @@
+{"schemaVersion":1,"recordType":"schema","fields":["changeId","profile","eventType","eventKey","count","severity","sourceFile","createdAt"],"notes":"当 Enhanced Flow 的 metrics ledger 启用时，每个度量事件追加一行 JSON。"}

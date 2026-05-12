@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "profiles": {
+    "minimal": {
+      "description": "Small bug fixes and narrow changes with code evidence, scoped edits, base self-review, per-change metrics, and targeted verification.",
+      "requiredSkills": ["openspec-new-change", "quick-fix-flow", "verification-flow"],
+      "requiredAgents": ["codebase-researcher", "code-reviewer"],
+      "optionalAgents": ["java-build-resolver", "java-reviewer"],
+      "qualityGate": "Run base self-review, record CHANGE_METRICS, then run targeted tests or explain why no runnable test exists."
+    },
+    "standard": {
+      "description": "Default product-to-test delivery workflow for normal product requirements, with base self-review and optional project consistency governance.",
+      "requiredSkills": ["openspec-new-change", "product-to-test-flow", "verification-flow", "learn-from-delivery", "openspec-archive-change"],
+      "requiredAgents": [
+        "product-discovery-analyst",
+        "product-spec-analyst",
+        "codebase-researcher",
+        "implementation-planner",
+        "test-planner",
+        "code-reviewer",
+        "learning-curator"
+      ],
+      "optionalAgents": ["backend-designer", "frontend-designer", "data-contract-designer", "java-reviewer"],
+      "qualityGate": "Implementation plan and test plan must be confirmed before coding; self-review and verification evidence are required before review."
+    },
+    "strict": {
+      "description": "High-risk workflow for auth, money, orders, inventory, database migrations, concurrency, external integrations, or security-sensitive changes.",
+      "requiredSkills": ["openspec-new-change", "strict-product-to-test-flow", "verification-flow", "review-flow", "learn-from-delivery", "openspec-archive-change"],
+      "requiredAgents": [
+        "codebase-researcher",
+        "data-contract-designer",
+        "test-planner",
+        "code-reviewer",
+        "database-reviewer",
+        "security-reviewer"
+      ],
+      "optionalAgents": ["java-reviewer", "java-build-resolver"],
+      "qualityGate": "Requires rollback plan, self-review, security review, database review when applicable, and recorded verification evidence."
+    },
+    "learning": {
+      "description": "Post-delivery learning workflow for extracting reusable project-scoped instincts and promotion candidates.",
+      "requiredSkills": ["learn-from-delivery", "openspec-archive-change"],
+      "requiredAgents": ["learning-curator"],
+      "optionalAgents": [],
+      "qualityGate": "Every lesson must include trigger, evidence, metrics signal, reuse path, SOP candidate when applicable, and promotion recommendation."
+    }
+  }
+}

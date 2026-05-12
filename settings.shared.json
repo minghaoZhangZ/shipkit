@@ -1,0 +1,55 @@
+{
+  "_workflowVersion": "1.0.0",
+  "_description": "公用配置文件——安装时合并到用户 settings.json，不覆盖 env 字段",
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
+  },
+  "extraKnownMarketplaces": {
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
+    }
+  },
+  "effortLevel": "max",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"$HOME/.claude/hooks/dangerous-command-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "安全检查中..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"$HOME/.claude/hooks/checkpoint-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "门禁检查中..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"$HOME/.claude/hooks/scope-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "文件范围检查中..."
+          }
+        ]
+      }
+    ]
+  },
+  "autoUpdatesChannel": "latest"
+}

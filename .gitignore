@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Backup files
+*.backup.*
+*.bak
+
+# OS
+Thumbs.db

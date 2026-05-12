@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "mode": "advisory",
+  "status": "draft",
+  "project": {
+    "name": "",
+    "description": "填写项目名称、业务范围和本事实库适用边界。"
+  },
+  "approval": {
+    "approvedBy": "",
+    "approvedAt": "",
+    "notes": "团队共识完成后填写审批人、审批时间和关键说明；未审批前保持 enabled=false。"
+  },
+  "ownerRoles": {
+    "architectureOwner": "填写架构 Owner 角色或负责人",
+    "domainOwner": "填写领域 Owner 角色或负责人",
+    "qualityOwner": "填写质量 Owner 角色或负责人"
+  },
+  "modules": {
+    "architecturePrinciples": true,
+    "dependencyRules": true,
+    "domainConcepts": true,
+    "moduleBoundaries": true,
+    "reusableApis": true,
+    "forbiddenPatterns": true,
+    "selfReviewRules": true,
+    "consistencyReview": true,
+    "sopRegistry": true,
+    "metricsLedger": true,
+    "architectureOwnerDecision": true
+  },
+  "requiredSpecs": [
+    "architecture-principles.md",
+    "dependency-rules.md",
+    "domain-concepts.md",
+    "module-boundaries.md",
+    "reusable-apis.md",
+    "forbidden-patterns.md",
+    "sop-registry.md"
+  ],
+  "metrics": {
+    "ledgerFile": "metrics-ledger.jsonl",
+    "sopPromotionSignals": {
+      "minOccurrences": 3,
+      "minAffectedChanges": 2,
+      "sourceCounters": [
+        "selfReviewIssuesFound",
+        "reviewBlockers",
+        "verificationFailedRounds",
+        "sopCandidatesCreated"
+      ]
+    },
+    "notes": "当同类问题在多个 change 中重复出现时，结合这些指标判断是否晋升为 SOP。"
+  }
+}
