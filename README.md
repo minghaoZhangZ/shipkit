@@ -1,6 +1,11 @@
-# ShipKit
+# ShipKit · 舰桥
 
-从产品想法到代码交付的 AI 工程工作流——把团队规范固化到 Claude Code 配置中，让 AI 按你的规则走完全流程。
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-orange)](https://docs.anthropic.com/en/docs/claude-code)
+
+> 舰桥（jiàn qiáo）—— 船舰的指挥中枢。AI 工程工作流，从想法到交付，让 Claude Code 按你的规则来。
+
+[English](README.en.md) | 简体中文
 
 ---
 
