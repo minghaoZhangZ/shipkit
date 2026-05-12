@@ -1,4 +1,4 @@
-# ShipKit
+# ShipKit(舰桥)
 <img width="100" height="100" alt="舰桥" src="https://github.com/user-attachments/assets/e2931431-8e3c-40f6-a133-f6bd82d624d5" />
 
 从产品想法到代码交付的 AI 工程工作流——把团队规范固化到 Claude Code 配置中，让 AI 按你的规则走完全流程。
