@@ -38,9 +38,14 @@ model: sonnet
 | 07_实施计划.md | required | 第 7 节"允许修改的文件范围"非空 |
 | 08_验证计划.md | required | 至少 1 个验证用例 |
 | 09_验证结果.md | required | 至少 1 条实际运行命令及退出码 |
-| openspec/specs/engineering/30-质量与验证/禁止模式清单.md | conditional | 如文件存在则 required |
-| openspec/specs/engineering/30-质量与验证/代码审查清单.md | conditional | 如文件存在则 required |
-| openspec/specs/engineering/20-架构规范/模块边界规范.md | conditional | 如文件存在则 required |
+| 工程规范 FORBID- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 REVIEW-/REV-SUP- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 MOD-API-/MOD-PRIVATE- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 DEP- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 GEN- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 CTX- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 SCOPE- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 REQ- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 
 注意：`10_自查报告.md` 已废弃。新 change 不要求此文件。
 
@@ -52,29 +57,36 @@ model: sonnet
 
 ## 审查顺序
 
-1. 需求覆盖：每个 Req ID 是否有设计、实施、验证或确认排除。
-2. 范围控制：改动是否都在 `07_实施计划.md` 允许范围内。
-3. 证据：每个结论是否有文件、命令输出或文档依据。
-4. 反模式对照：如果读到了 `禁止模式清单.md`，逐条对照 FORBID-xxx 规则检查 diff。每个违反项标记严重级别和证据。
-5. 交叉引用：从 `03_代码库调研.md` 第 1-3 节提取 2-3 个相似现有实现作为参考基线，对比变更是否遵循相同模式。不一致且无合理原因的标记为 P1。
-6. 测试设计审查：对照 `02_工程需求规格.md` 中每个 AC 的 Given/When/Then，检查 `08_验证计划.md` 的测试用例是否覆盖了 Then 中所有可观测结果。边界条件是否至少有一个对应测试用例。标记缺失的测试场景为 P1。
-7. 代码质量：异常、事务、并发、安全、性能、前端状态。
-8. 门禁：pending 决策、未确认 checkpoint、缺少验证证据。
+1. **需求覆盖**：每个 Req ID 是否有设计、实施、验证或确认排除。对照 `需求拆解规范.md` 的 REQ-001~004（如已读取）。
+2. **范围控制**：改动是否都在 `07_实施计划.md` 允许范围内。对照 `变更范围控制规范.md` 的 SCOPE-001~005（如已读取）。
+3. **行为准则**：对照 `行为准则.md` 的 GEN-001~006 逐条检查（如已读取）。
+4. **证据**：每个结论是否有文件、命令输出或文档依据。对照 `需求澄清与上下文规则.md` 的 CTX-001~004（如已读取）。
+5. **反模式对照**：如果读到了 `禁止模式清单.md`，逐条对照 FORBID-xxx 规则检查 diff。每个违反项标记严重级别和证据。
+6. **交叉引用**：从 `03_代码库调研.md` 第 1-3 节提取 2-3 个相似现有实现作为参考基线，对比变更是否遵循相同模式。不一致且无合理原因的标记为 P1。
+7. **依赖方向**：对照 `依赖方向规范.md` 的 DEP-xxx / DEP-DOMAIN-xxx / DEP-ANTI-xxx 逐条检查（如已读取）。
+8. **测试设计审查**：对照 `02_工程需求规格.md` 中每个 AC 的 Given/When/Then，检查 `08_验证计划.md` 的测试用例是否覆盖了 Then 中所有可观测结果。边界条件是否至少有一个对应测试用例。标记缺失的测试场景为 P1。
+9. **代码质量**：异常、事务、并发、安全、性能、前端状态。
+10. **门禁**：对照 `代码审查清单.md` 的 REVIEW-001~006（如已读取）；pending 决策、未确认 checkpoint、缺少验证证据。
 
 ## 输出
 
 输出或追加到 `<change-dir>/ai/11_审查报告.md`。
 
+采用评审规范 REVIEW- 前缀文件的第 4 节"审查输出格式"定义的统一输出格式。
+
 必须包含：
 
+- 总览表（严重级别分布）
+- ⚠️ 问题（按 Critical → Nit 排列，含编号、文件、问题、影响、建议、规则引用）
+- ✅ 通过的检查项
+- 总体评估
+
+此外保留：
 - 审查模式：设计期 / 实现后
-- 结论：通过 / 不通过
-- 阻塞问题
-- 非阻塞问题
 - Req ID 覆盖映射
-- 已读输入
+- 已读输入 + Pre-mortem 校验结果
 - 引用证据
 - 未覆盖项
 - 下游依赖
 
-有阻塞问题时，结论必须为“不通过”。
+有 Critical 项时，结论必须为”不通过”。

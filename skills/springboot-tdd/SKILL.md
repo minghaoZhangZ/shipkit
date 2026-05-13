@@ -20,6 +20,23 @@ origin: ECC-adapted
 
 ## Test Selection
 
+### 测试风格决策
+
+优先使用 **JUnit 5 + Mockito**（隔离单元测试），当满足以下条件时：
+
+- 依赖可通过构造器、Setter 或局部实例化注入。
+- 被测逻辑主要是校验、分支、映射、计算或服务编排。
+- 不需要启动 Spring 容器就能验证行为。
+
+使用 **@SpringBootTest** 或 Spring 测试切片，仅当：
+
+- 行为依赖 Spring Bean 装配、AOP、配置属性、条件 Bean 或事务。
+- 既有同业务测试已采用 Spring 上下文 + @MockBean / @SpyBean。
+- 需要替换应用上下文中的 Mapper、Feign Client、缓存、Redis 或外部服务 Bean。
+- 涉及 RedisLockUtils + @Transactional 组合行为（此类行为单元测试无法覆盖锁生命周期）。
+
+### 按层选择
+
 Service / Domain：
 
 - 使用 JUnit 5 + Mockito。

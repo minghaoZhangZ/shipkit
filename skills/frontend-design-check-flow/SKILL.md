@@ -15,7 +15,7 @@ description: Use when frontend pages, routes, forms, tables, components, interac
 - `01_PRD产品需求.md`
 - `02_工程需求规格.md`
 - `03_代码库调研.md`
-- `openspec/specs/engineering/10-编码规范/前端编码与交互规范.md`（存在时）
+- 工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `engineering/**/*.md` + grep 前缀）：FE- 前缀（前端编码与交互）
 
 按需读取现有路由、菜单、组件、状态管理、API 调用和样式约定。
 

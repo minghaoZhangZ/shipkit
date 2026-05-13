@@ -22,10 +22,10 @@ description: Use when staged or unstaged changes need evidence-based review befo
 
 1. 查看 `git status` 和 `git diff`，或等价的变更证据。
 2. 阅读相关 `<change-dir>/ai/` 文档和 `CONTEXT_PACKAGE.md`。
-3. 主控 Agent 在调用 reviewer 前，确认 CONTEXT_PACKAGE.md 的 Input Manifest 已包含：
-   - `openspec/specs/engineering/30-质量与验证/禁止模式清单.md`（存在时）
-   - `openspec/specs/engineering/30-质量与验证/代码审查清单.md`（存在时）
-   - `openspec/specs/engineering/20-架构规范/模块边界规范.md`（存在时）
+3. 主控 Agent 在调用 reviewer 前，确认 CONTEXT_PACKAGE.md 的 Input Manifest 已包含工程规范（通过 engineering.json rulePrefixIndex 发现）：
+   - FORBID- 前缀（禁止模式）
+   - REVIEW-/REV-SUP- 前缀（代码审查清单）
+   - MOD-API-/MOD-PRIVATE- 前缀（模块边界）
 4. 调用 `code-reviewer`。返回后检查 Pre-mortem 校验通过标记；失败则补全输入重新调用。
 5. 如果涉及 Java/Spring、数据库、安全、前端 UI/UX，调用专项 reviewer。每个专项 reviewer 返回后检查 Pre-mortem 校验通过标记。
 6. 如果发现阻塞或高风险问题，只给修复建议，交给主控 Agent 或 resolver 处理。
@@ -75,11 +75,16 @@ description: Use when staged or unstaged changes need evidence-based review befo
 
 ## 输出
 
-`11_审查报告.md` 必须包含：
+`11_审查报告.md` 采用评审规范 REVIEW- 前缀文件的第 4 节"审查输出格式"定义的统一输出格式。
 
-- 结论：通过 / 不通过
-- 阻塞问题
-- 非阻塞问题
+必须包含：
+
+- 总览表（Critical / Major / Minor / Nit 分布）
+- ⚠️ 问题（按严重级别排列，每条含编号、文件、问题、影响、建议、规则引用）
+- ✅ 通过的检查项
+- 总体评估（通过 / 不通过 / 有条件通过，有 Critical 项自动不通过）
+
+此外保留：
 - Req ID 覆盖映射
 - 已读输入
 - 引用证据

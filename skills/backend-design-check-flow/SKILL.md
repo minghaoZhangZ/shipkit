@@ -14,11 +14,12 @@ description: Use when backend APIs, services, transactions, SQL, integrations, p
 - `CONTEXT_PACKAGE.md`
 - `02_工程需求规格.md`
 - `03_代码库调研.md`
-- `openspec/specs/engineering/10-编码规范/Java后端编码规范.md`（存在时）
-- `openspec/specs/engineering/10-编码规范/Spring事务与并发规范.md`（存在时）
-- `openspec/specs/engineering/10-编码规范/SQL与数据库规范.md`（存在时）
+- 工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `openspec/specs/engineering/**/*.md` + grep 前缀）：
+  - JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀（Java 编码与数据访问）
+  - TX- 前缀（Spring 事务与并发）
+  - DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀（SQL 与数据库）
 
-按需读取 `20-架构规范/` 和相关源码。
+按需读取架构规范（MOD-API-/MOD-PRIVATE-/DEP-/ARCH-LAYER-/API-REUSE- 前缀）和相关源码。
 
 ## 执行
 

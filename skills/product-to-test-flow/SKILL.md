@@ -274,7 +274,20 @@ updated_at: "2026-05-12T00:00"
 4. 每完成一个子任务更新 task 跟踪字段。
 5. 证据不足时回到工程规格或写入 `PENDING_DECISIONS.md`。
 
-### backend_design
+### design
+
+research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后端设计可并行执行**。
+
+#### 并行规则
+
+1. 检查 `affected_areas`：
+   - 含 `backend`、`database`、`integration`、`security` → 需要后端设计
+   - 含 `frontend`、`ui`、`ux`、`page`、`component` → 需要前端设计
+2. 如果**同时需要后端和前端设计**：在单条消息中并行启动两个 Agent（`backend-designer` 和 `frontend-designer`），它们独立运行、共享 `<change-dir>/ai/` 目录。
+3. 如果只需要一方：只启动对应 Agent。
+4. 等待并行 Agent 全部返回后，分别触发对应 checkpoint。
+
+#### 后端设计（backend_design）
 
 当 `affected_areas` 包含 `backend`、`database`、`integration`、`security` 时执行：
 
@@ -282,9 +295,9 @@ updated_at: "2026-05-12T00:00"
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
    - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
    - `03_代码库调研.md`: required，第 1 节"涉及模块"非空
-   - `openspec/specs/engineering/10-编码规范/Java后端编码规范.md`: conditional（文件存在则 required）
-   - `openspec/specs/engineering/10-编码规范/Spring事务与并发规范.md`: conditional（文件存在则 required）
-   - `openspec/specs/engineering/10-编码规范/SQL与数据库规范.md`: conditional（文件存在则 required）
+   - 工程规范 JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
+   - 工程规范 TX- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
+   - 工程规范 DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
 3. 初始化 `task_stack`：
    - "模块依赖与边界分析"
    - "Controller/Service/Repository 边界设计"
@@ -296,11 +309,11 @@ updated_at: "2026-05-12T00:00"
    - "后端任务拆分与 Req ID 覆盖"
    第一项标记 `in_progress`。
 4. 更新 `current_task`，调用 `backend-designer` 产出 `04_后端方案说明.md`。
-4. 按需调用 `java-reviewer`、`database-reviewer`、`security-reviewer` 做设计期审查。
-5. 每完成一个子任务更新 task 跟踪字段。
-6. 触发 `backend_design_confirmation`。
+5. 按需调用 `java-reviewer`、`database-reviewer`、`security-reviewer` 做设计期审查。
+6. 每完成一个子任务更新 task 跟踪字段。
+7. 触发 `backend_design_confirmation`。
 
-### frontend_design
+#### 前端设计（frontend_design）
 
 当前端页面、组件、路由、表单、表格、交互、样式、权限展示或浏览器行为受影响时执行：
 
@@ -309,7 +322,7 @@ updated_at: "2026-05-12T00:00"
    - `01_PRD产品需求.md`: required，第 8 节"业务流程"非空
    - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
    - `03_代码库调研.md`: required，涉及前端模块的证据非空
-   - `openspec/specs/engineering/10-编码规范/前端编码与交互规范.md`: conditional（文件存在则 required）
+   - 工程规范 FE- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
 3. 初始化 `task_stack`：
    - "页面入口、路由、菜单定位"
    - "用户流程与各状态设计（成功/失败/空/加载/权限）"
@@ -320,9 +333,9 @@ updated_at: "2026-05-12T00:00"
    - "Req ID 覆盖映射"
    第一项标记 `in_progress`。
 4. 更新 `current_task`，调用 `frontend-product-design` 和 `frontend-designer` 产出 `05_前端方案说明.md`。
-4. 调用 `frontend-ux-reviewer` 做设计期审查。
-5. 每完成一个子任务更新 task 跟踪字段。
-6. 触发 `frontend_design_confirmation`。
+5. 调用 `frontend-ux-reviewer` 做设计期审查。
+6. 每完成一个子任务更新 task 跟踪字段。
+7. 触发 `frontend_design_confirmation`。
 
 ### contract
 
@@ -417,13 +430,39 @@ updated_at: "2026-05-12T00:00"
 
 1. 使用 `review-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，`current_phase=review`，填写 Input Manifest：
+
+   **核心输入（required）：**
    - `02_工程需求规格.md`: required
    - `07_实施计划.md`: required
    - `08_验证计划.md`: required
    - `09_验证结果.md`: required
-   - `openspec/specs/engineering/30-质量与验证/禁止模式清单.md`: conditional（文件存在则 required）
-   - `openspec/specs/engineering/30-质量与验证/代码审查清单.md`: conditional（文件存在则 required）
-   - `openspec/specs/engineering/20-架构规范/模块边界规范.md`: conditional（文件存在则 required）
+
+   **总则（conditional，如 engineering.json rulePrefixIndex 存在则 required）：**
+   - 工程规范 GEN- 前缀: conditional
+   - 工程规范 CTX- 前缀: conditional
+
+   **编码规范（conditional，如 engineering.json rulePrefixIndex 存在则 required）：**
+   - 工程规范 JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀: conditional
+   - 工程规范 TX- 前缀: conditional
+   - 工程规范 DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀: conditional
+   - 工程规范 NPE- 前缀: conditional
+   - 工程规范 API- 前缀: conditional
+   - 工程规范 FE- 前缀: conditional
+   - 工程规范 CACHE- 前缀: conditional
+
+   **架构规范（conditional，如 engineering.json rulePrefixIndex 存在则 required）：**
+   - 工程规范 MOD-API-/MOD-PRIVATE- 前缀: conditional
+   - 工程规范 DEP- 前缀: conditional
+   - 工程规范 API-REUSE- 前缀: conditional
+   - 工程规范 ARCH-LAYER- 前缀: conditional
+
+   **质量与验证（conditional，如 engineering.json rulePrefixIndex 存在则 required）：**
+   - 工程规范 FORBID-/FORBID-SEC-/FORBID-DB- 前缀: conditional
+   - 工程规范 REVIEW-/REV-SUP- 前缀: conditional
+
+   **交付流程（conditional，如 engineering.json rulePrefixIndex 存在则 required）：**
+   - 工程规范 SCOPE- 前缀: conditional
+   - 工程规范 REQ- 前缀: conditional
 3. 初始化 `task_stack`：
    - "需求覆盖审查"
    - "范围与证据审查"

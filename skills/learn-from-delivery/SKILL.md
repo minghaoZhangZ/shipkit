@@ -16,7 +16,7 @@ description: Use when a feature, bugfix, review, or release is finished and reus
 5. 输出 `13_经验沉淀.md`。
 6. 输出 `14_Agent评估.md`。
 7. 在 lessons 中产出 SOP candidate 小节。
-8. 如果启用 `openspec/specs/engineering/engineering.json` 且 `modules.learningGovernance=true`，读取 `50-经验沉淀/指标台账.jsonl` 并按重复信号更新 `50-经验沉淀/SOP注册表.md`。
+8. 如果启用 `openspec/specs/engineering/engineering.json` 且 `modules.learningGovernance=true`，读取 `engineering.json` metrics.ledgerFile 指定的指标台账并按重复信号更新 SOP 注册表。
 9. 更新 `<change-dir>/metadata.json` 状态为 `done`。
 
 ## 晋升标准

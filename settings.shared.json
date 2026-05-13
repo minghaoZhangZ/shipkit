@@ -58,6 +58,17 @@
             "statusMessage": "文件范围检查中..."
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py -3 \"$HOME/.claude/hooks/engine-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "工程规范前缀检查中..."
+          }
+        ]
       }
     ]
   },

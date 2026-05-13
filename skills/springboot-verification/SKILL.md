@@ -22,15 +22,27 @@ origin: ECC-adapted
 
 ## Minimal Verification
 
-用于小改动：
+用于小改动，采用渐进策略：
+
+1. 先运行目标测试类：
 
 ```bash
-./mvnw test
-mvn test
-./gradlew test
+mvn -Dtest=ChangedClassNameTest test
 ```
 
-也可以运行更窄的测试，但必须说明原因。
+2. 如涉及相关类，扩展运行：
+
+```bash
+mvn -Dtest=ChangedTest,RelatedTest test
+```
+
+3. 仅当改动影响共享逻辑（工具类、基础 Service、AOP 切面）时，才运行全量：
+
+```bash
+mvn test
+```
+
+必须记录实际运行命令、退出码和关键输出。只跑第一步就声称通过时，需说明为什么其他类不需要跑。
 
 ## Standard Verification
 

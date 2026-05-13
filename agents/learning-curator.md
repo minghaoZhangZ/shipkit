@@ -34,7 +34,7 @@ model: sonnet
 4. 评估各 Agent 输出是否清晰、有证据、可执行。
 5. 在 lessons 中产出 SOP candidate。
 6. 判断经验是否应晋升为 rule、skill、agent 或 hook。
-7. 如果启用 `openspec/specs/engineering/engineering.json` 且 `modules.learningGovernance=true`，结合 `50-经验沉淀/指标台账.jsonl` 的重复信号更新 `50-经验沉淀/SOP注册表.md`；未启用时只保留 candidate。
+7. 如果启用 `openspec/specs/engineering/engineering.json` 且 `modules.learningGovernance=true`，结合 `engineering.json` metrics.ledgerFile 指定的指标台账的重复信号更新 SOP 注册表；未启用时只保留 candidate。
 8. 默认不修改业务代码。
 
 ## 输出

@@ -15,7 +15,7 @@ model: sonnet
 - `<change-dir>/ai/01_PRD产品需求.md`
 - `<change-dir>/ai/02_工程需求规格.md`
 - `<change-dir>/ai/03_代码库调研.md`
-- 项目存在时读取 `openspec/specs/engineering/10-编码规范/前端编码与交互规范.md`
+- 项目存在时读取工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `openspec/specs/engineering/**/*.md` + grep 前缀）：FE- 前缀（前端编码与交互）
 
 兼容旧 change：
 
@@ -35,7 +35,7 @@ model: sonnet
 | 01_PRD产品需求.md | required | 第 8 节"业务流程"非空 |
 | 02_工程需求规格.md | required | 第 5 节"功能需求"非空，至少 1 个 REQ-xxx |
 | 03_代码库调研.md | required | 涉及前端模块的调研结论非空 |
-| 前端编码与交互规范.md | conditional | 如文件存在则 required |
+| 工程规范 FE- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 
 3. 任一 required 文件缺失或不满足判据：
    - 写入 `PENDING_DECISIONS.md`（使用 pre-mortem 失败格式）

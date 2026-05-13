@@ -52,7 +52,7 @@ trace_matrix_status: lightweight
 6. 按需输出 `08_验证计划.md`；小 UI bug 必须记录页面、组件、复现路径、视口和预期结果。
 7. 更新 `.workflow_state`：`current_phase=coding`，`current_task` 为第一个实施任务，`next_action` 为具体操作。
 8. 主控 Agent 只修改计划允许的文件，每完成一个 task 更新 `current_task`、`last_completed_task`、`next_action`、`resume_context`。如有测试用例，优先写测试再写实现。
-9. 调用 `test-planner` 验证模式（轻量：覆盖率核对可选，只执行目标测试命令），产出 `09_验证结果.md`。前端改动同时执行 `frontend-verification-flow`。
+9. 调用 `test-planner` 验证模式（minimal profile：覆盖率核对可选，采用渐进策略执行测试——先目标类、再相关类、必要时才全量；前端改动同时执行 `frontend-verification-flow`），产出 `09_验证结果.md`。
 10. 执行轻量只读 diff review，由主控 Agent 直接对比变更和需求（不强制调用独立 reviewer）。
 11. 更新 `CHANGE_METRICS.json`。
 12. 输出 `12_发布说明.md`，更新 `.workflow_state`：`current_phase=delivery`。
