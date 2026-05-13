@@ -9,6 +9,8 @@ PreToolUse hooks that provide hard enforcement of workflow guardrails.
 - `dangerous-command-guard.py` — blocks destructive commands (git reset --hard, push --force, rm -rf, DROP TABLE, curl|sh, etc.)
 - `checkpoint-guard.py` — blocks business code edits and build commands when user confirmation is pending (reads .workflow_state)
 - `scope-guard.py` — blocks edits to files outside the implementation plan's allowed scope (active in coding/verification phases)
+- `canonical-filename-guard.py` — blocks non-canonical filenames under openspec/changes/*/ai/
+- `engine-guard.py` — validates rule ID prefixes when writing openspec/specs/engineering/**/*.md against engineering.json rulePrefixIndex
 
 ### How they work
 

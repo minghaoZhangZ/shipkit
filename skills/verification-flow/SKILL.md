@@ -1,4 +1,4 @@
----
+﻿---
 name: verification-flow
 description: Use when about to claim work is complete, write release notes, finish review, or verify significant implementation changes.
 ---
@@ -33,7 +33,6 @@ description: Use when about to claim work is complete, write release notes, fini
    - 文件内容必须包含 `test-planner` 的评估结论标记（"评估结论: 充分" 或 "评估结论: 不充分"）。
    - 如果文件不存在或缺少评估结论标记 → **停止**。不得自行运行测试、不得自行判断测试结果、不得跳过此检查。重新调用 `test-planner`。
 4. 子 Agent 返回后，检查输出是否包含 Pre-mortem 校验通过标记；校验失败则补全输入重新调用。
-4. 子 Agent 返回后，检查输出是否包含 Pre-mortem 校验通过标记；校验失败则补全输入重新调用。
 5. 子 Agent 将结果写入 `09_验证结果.md`（含覆盖率矩阵、命令执行结果、评估结论、缺口清单）。
 6. 按 profile 选择深度：
    - minimal：test-planner 覆盖率核对可选，只执行目标测试命令。
@@ -42,7 +41,10 @@ description: Use when about to claim work is complete, write release notes, fini
 7. 前端改动同时使用 `frontend-verification-flow`，浏览器验证结果也写入 `09_验证结果.md`。
 8. 处理验证结论：
    - 评估结论"充分"且无 P0/P1 失败 → 进入 review 阶段。
-   - 评估结论"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）。
+   - 评估结论"不充分"或有 P0/P1 失败 → 执行以下步骤后进入修复循环：
+     a. 从 `09_验证结果.md` 的 `## N. 修复上下文` 节提取 `<!-- fix_context_start -->` 和 `<!-- fix_context_end -->` 之间的内容。
+     b. 将提取内容注入 `.workflow_state` 的 `resume_context` 字段，同时更新 `current_task` 为"修复验证缺口"、`next_action` 为对应 L1/L2 操作。
+     c. 进入修复循环（参见 `rules/workflow/verification-loop.md`）。
 
 ## 修复循环提醒
 

@@ -14,9 +14,10 @@ model: sonnet
 - `<change-dir>/ai/CONTEXT_PACKAGE.md`
 - `<change-dir>/ai/02_工程需求规格.md`
 - `<change-dir>/ai/03_代码库调研.md`
-- 项目存在时读取 `openspec/specs/engineering/10-编码规范/Java后端编码规范.md`
-- 项目存在时读取 `openspec/specs/engineering/10-编码规范/Spring事务与并发规范.md`
-- 项目存在时读取 `openspec/specs/engineering/10-编码规范/SQL与数据库规范.md`
+- 项目存在时读取工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `openspec/specs/engineering/**/*.md` + grep 前缀）：
+  - JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀（Java 编码与数据访问）
+  - TX- 前缀（Spring 事务与并发）
+  - DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀（SQL 与数据库）
 
 兼容旧 change：
 
@@ -35,9 +36,9 @@ model: sonnet
 | 02_工程需求规格.md | required | 第 5 节"功能需求"非空，至少 1 个 REQ-xxx |
 | 03_代码库调研.md | required | 第 1 节"涉及模块"非空 |
 | 06_接口与数据契约.md | conditional | 如 affected_areas 含 contract，则 required；第 2 节非空 |
-| Java后端编码规范.md | conditional | 如文件存在则 required |
-| Spring事务与并发规范.md | conditional | 如文件存在则 required |
-| SQL与数据库规范.md | conditional | 如文件存在则 required |
+| 工程规范 JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 TX- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
+| 工程规范 DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 
 3. 任一 required 文件缺失或不满足判据：
    - 写入 `PENDING_DECISIONS.md`（使用 pre-mortem 失败格式）

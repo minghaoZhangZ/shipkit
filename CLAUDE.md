@@ -81,3 +81,16 @@
 
 不匹配任何家族 → 直接对话，不走工作流。
 不确定时 → 列出候选家族让用户选，不猜测。
+
+## Spec Discovery Rule
+
+当需要读取工程规范时，不通过硬编码路径，而是通过规则 ID 前缀发现：
+
+1. 读取 `openspec/specs/engineering/engineering.json`，获取 `rulePrefixIndex` 和 `discovery` 配置。
+2. 确定需要的规则 ID 前缀（如 `JAVA-DA-`、`TX-`、`GEN-`）。
+3. Glob `openspec/specs/engineering/**/*.md` 并 grep 对应前缀，找到包含目标规则的文件。
+4. 读取过程中提取所有规则 ID，逐条检查前缀是否在 `rulePrefixIndex` 中：
+   - 已注册 → 正常引用，强制执行。
+   - 未注册 → 照样读取，但标注"⚠️ 规则 xxx 前缀未注册，审查时不强制执行。注册方法：在 engineering.json rulePrefixIndex 添加前缀。"
+5. 新 Change 中发现未注册规则时，写入 PENDING_DECISIONS.md。
+6. 如果 `engineering.json` 为 v1 schema（仅含 `requiredSpecs`），按 legacy 兼容模式处理（glob + 文件名匹配作为回退）。

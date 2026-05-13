@@ -86,7 +86,7 @@ echo $env:USERPROFILE
 3. `<USERPROFILE>\.claude\profiles\` → 应有 profiles.json + README.md
 4. `<USERPROFILE>\.claude\skills\` 下子目录数 → 应有 29 个
 5. `<USERPROFILE>\.claude\agents\` 下 .md 文件数 → 应有 16 个
-6. `<USERPROFILE>\.claude\hooks\` 下 .py 文件数 → 应有 4 个
+6. `<USERPROFILE>\.claude\hooks\` 下 .py 文件数 → 应有 5 个
 7. `<USERPROFILE>\.claude\settings.json` 包含 `env` 字段 → 有/无（API 配置完好/被破坏）
 8. `<USERPROFILE>\.claude\settings.json` 包含 `hooks.PreToolUse` → 有/无（Hook 已注册/未注册）
 9. 执行 `py -3 -c "import sys; print('ok')"` → 能输出 ok

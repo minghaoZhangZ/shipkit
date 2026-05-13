@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Validate role-checkpoint workflow wiring.
 
@@ -137,6 +137,7 @@ def run_hook(hook_path, payload, cwd):
 def write_state(ai_dir, confirmed=False, checkpoint='prd_confirmation', phase='prd'):
     ai_dir.joinpath('.workflow_state').write_text(
         '\n'.join([
+            'schema_version: "1.0"',
             'change_id: demo',
             'profile: standard',
             f'current_phase: {phase}',

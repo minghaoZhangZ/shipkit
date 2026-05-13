@@ -26,7 +26,7 @@ description: Use when a requirement, bugfix, refactor, security fix, data migrat
    - `modules.architectureRules=true` 或 `modules.qualityVerification=true` 时，检查 `PROJECT_CONSISTENCY_REVIEW.md`。
    - `mode=advisory`：允许归档，但归档记录中保留风险。
    - `mode=enforced`：一致性 review 不通过或缺失时不得归档。
-   - `modules.learningGovernance=true` 时，将 `CHANGE_METRICS.json` 归纳追加到 `openspec/specs/engineering/50-经验沉淀/指标台账.jsonl`。
+   - `modules.learningGovernance=true` 时，将 `CHANGE_METRICS.json` 归纳追加到 `engineering.json` metrics.ledgerFile 指定的指标台账。
    - `modules.learningGovernance=true` 时，确认 SOP candidate 已按规则处理。
 5. 未启用 engineering manifest 时，跳过 Enhanced Flow，不得阻断 Base Flow。
 6. 将目录移动到 `openspec/changes/archive/<change-id>`。
