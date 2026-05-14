@@ -438,24 +438,21 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 4. 调用 `test-planner`（验证执行模式），由其独立完成覆盖率核对、测试执行和充分性评估，产出 `09_验证结果.md`。
 5. 子 Agent 返回后检查 Pre-mortem 校验通过标记；失败则补全输入重新调用。
 6. 前端改动同时调用 `frontend-verification-flow`，浏览器验证结果写入 `09_验证结果.md`。
-7. 评估结论为"充分"且无 P0/P1 失败 → 
+7. 评估结论为"充分"且无 P0/P1 失败 →
    - **minimal profile**：跳过 Completion Audit，直接进入交付阶段（`12_发布说明.md`）。minimal 没有 `02_工程需求规格.md`，审计无输入数据。
-   - **standard/strict**：进入 Completion Audit（参见 `skills/verification-flow/SKILL.md` 的"Completion Audit"节）。
-8. Completion Audit（完成审计）：
-   - 测试通过 ≠ 任务完成。对照 `02_工程需求规格.md` 逐条 REQ 映射到代码/测试证据。
-   - 审计通过 → 进入 review（步骤 10）。
-   - 审计不通过（有未覆盖 REQ 或范围缩减）：
-     - ralph 模式下：更新 `ralph.iteration += 1`，标注缺口 → 更新 `.workflow_state` 的 `current_phase=coding`、`resume_context` 为缺口描述 → 回到 coding 阶段**只补充缺口**（不重做已完成实现）
-     - 非 ralph 模式：记录到 `OPEN_ISSUES.md`，不阻断进入 review（但记录风险）
-     - `ralph.iteration > ralph.max_iterations`：更新 `.workflow_state` 设 `state=blocked`，强制停止，写 PENDING_DECISIONS
-9. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
+   - **standard/strict profile**：使用 `completion-audit-flow` 执行独立审计（审计检查清单、结果分流、回 coding 机制等细节参见该 skill）。
+     - audit PASS → 进入 review。
+     - audit FAIL（ralph 模式）→ `ralph.iteration += 1` → `current_phase=coding`，回 coding 补充缺口 → 重新走 verification → audit 完整流程。
+     - audit WARN（非 ralph 模式）→ 记录 OPEN_ISSUES，进入 review。
+     - `ralph.iteration > ralph.max_iterations` → `state=blocked`，写 PENDING_DECISIONS，人工介入。
+8. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
    - L1 构建/基础设施错误 → `build-error-resolver` → 重新调用 test-planner 验证
    - L2 断言失败/覆盖缺口（首次）→ 主控修复 → **重新调用 test-planner 验证**（主控不自己跑测试）
    - L3 同组件连续两次失败 → `code-reviewer` 诊断，主控不得继续修
      - ralph 模式下：自动根据诊断结论回路（回 design / 回 coding / 修正测试计划）
    - L4 连续三次失败 → 更新 `.workflow_state` 设 `state=blocked`，写 PENDING_DECISIONS，人工介入
-10. 进入 review 阶段。
-11. 每完成一个子任务更新 task 跟踪字段。
+9. 进入 review 阶段。
+10. 每完成一个子任务更新 task 跟踪字段。
 
 ### review
 

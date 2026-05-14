@@ -79,14 +79,14 @@ Checkpoint enforcement: `checkpoint-guard.py` blocks business-code edits and bui
 ```
 requirement → prd → engineering_spec → research →
 backend_design → frontend_design → contract → plan →
-coding → verification → review → delivery → archive
+coding → verification → completion_audit → review → delivery → archive
 ```
 
 Each phase delegates to a phase skill, which calls a specialist agent to produce the canonical document. The main agent implements code during the coding phase — designers and reviewers do not modify business code.
 
-**Verification phase**: test-planner agent runs independently in verification mode. The main agent must not run tests or interpret test output. A hard stop in `verification-flow` requires `09_验证结果.md` to contain the test-planner evaluation conclusion marker before proceeding to review.
+**Verification phase**: test-planner agent runs independently in verification mode. The main agent must not run tests or interpret test output. A hard stop in `verification-flow` requires `09_验证结果.md` to contain the test-planner evaluation conclusion marker.
 
-After test-planner verification passes, an optional **Completion Audit** (ralph mode) verifies that the task is truly complete — not just that tests pass. It checks REQ coverage, scope reduction, TODO zero-clear, and boundary conditions. In ralph mode, a failed audit routes back to coding instead of waiting for human intervention.
+**Completion Audit phase** (`completion-audit-flow`): An independent gate between verification and review. It audits whether the task is truly complete — not just that tests pass. Checks REQ coverage, scope reduction, TODO zero-clear, and boundary conditions. In ralph mode, a failed audit routes back to coding without starting review; in non-ralph mode, gaps are recorded as OPEN_ISSUES but don't block review.
 
 ## Ralph Persistence Completion Loop
 

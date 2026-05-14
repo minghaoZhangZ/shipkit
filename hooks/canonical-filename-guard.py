@@ -35,6 +35,7 @@ CANONICAL_NAMES = {
     "PENDING_DECISIONS.md",
     "CHANGE_METRICS.json",
     "OPEN_ISSUES.md",
+    "COMPLETION_AUDIT.md",
     ".workflow_state",
     # Legacy English names — allowed for reading, blocked for new writes.
     # Listed here so the error message can suggest the canonical alternative.

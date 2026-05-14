@@ -46,90 +46,18 @@ description: Use when about to claim work is complete, write release notes, fini
      b. 将提取内容注入 `.workflow_state` 的 `resume_context` 字段，同时更新 `current_task` 为"修复验证缺口"、`next_action` 为对应 L1/L2 操作。
      c. 进入修复循环（参见 `rules/workflow/verification-loop.md`）。
 
-## Completion Audit（完成审计）
+## 进入 Completion Audit
 
-测试通过 ≠ 任务完成。Completion Audit 验证的是"任务是否真的完成了"。
+评估结论"充分"且无 P0/P1 失败后：
 
-审计由主控 Agent 执行（meta-check，不需要新 Agent）。如果 `.workflow_state` 中 `ralph.enabled=true`，审计为强制执行；否则为标准检查（不阻断但记录缺口）。
+- **minimal profile**：跳过 audit，直接进入交付阶段（`12_发布说明.md`）。minimal 没有 `02_工程需求规格.md`，审计无输入数据。
+- **standard/strict profile**：使用 `completion-audit-flow` 执行独立审计。
+  - audit PASS → 进入 review。
+  - audit FAIL（ralph 模式）→ 回到 coding 补充缺口，重新走 verification → audit 完整流程。
+  - audit WARN（非 ralph 模式）→ 记录 OPEN_ISSUES，进入 review。
+  - `ralph.iteration > ralph.max_iterations` → `state=blocked`，写 PENDING_DECISIONS，人工介入。
 
-**minimal profile 跳过此节**——minimal 不执行全量验证，没有 `02_工程需求规格.md`，审计无输入数据。如果 ralph 触发条件与 minimal 同时满足，先升级到 standard。
-
-### 审计触发条件
-
-以下任一条件满足时，`ralph.enabled` 自动设为 true：
-- profile 为 strict
-- 用户说"必须完成""不要停""ralph""做完为止"
-- 任务涉及安全/金钱/订单/数据迁移/并发/外部集成
-
-### 审计检查清单
-
-#### A. 需求覆盖审计（强制）
-
-- [ ] 逐条读取 `02_工程需求规格.md` 中的 REQ-xxx
-- [ ] 每条 REQ 映射到具体的文件/测试/命令行证据（查 `09_验证结果.md` 的覆盖率矩阵）
-- [ ] 标记为"本次不实现"的 REQ 是否有用户确认证据
-- [ ] 标记未覆盖的 REQ → 写入 `OPEN_ISSUES.md`
-
-#### B. 范围缩减检测（强制）
-
-- [ ] 对比 `07_实施计划.md` 的任务清单 vs 实际 `git diff --stat` 改动
-- [ ] 检查是否有"先跳过""TODO""FIXME""HACK""暂时"标记
-- [ ] 检查是否有注释掉的代码块（`git diff` 中以 `-//` 或 `-/*` 开头的大段删除不算）
-- [ ] 检查是否有计划中的任务被无声跳过（task_stack 中非 completed 但在 diff 中无对应改动）
-
-#### C. TODO 清零（强制）
-
-- [ ] `git diff` 中无新增 TODO/FIXME/HACK（允许已存在的）
-- [ ] `task_stack` 全部 completed 或标记为"用户确认不做"
-- [ ] `PENDING_DECISIONS.md` 中无阻塞项
-
-#### D. 边界条件覆盖（标准）
-
-- [ ] 检查测试是否覆盖了失败路径（不只是 happy path）
-- [ ] 检查 `08_验证计划.md` 中标记的"无法自动化"项是否有手动验证记录
-- [ ] 检查空值、边界值、异常输入是否处理
-
-#### E. 去冗余检查（ralph deep 模式，可选）
-
-- [ ] 无未使用的 import
-- [ ] 无注释掉的代码块（非文档性注释）
-- [ ] 无过度抽象（3 行逻辑包装成 10 行 helper）
-
-### 审计结果处理
-
-- **全部通过** → 更新 `.workflow_state`：`ralph.completion_audit_passed=true`，`ralph.audit_history` 追加 PASSED 记录。进入 review 阶段。
-- **有未覆盖 REQ 或范围缩减**：
-  - **ralph 模式**（`ralph.enabled=true`）：更新 `.workflow_state`：`ralph.completion_audit_passed=false`，`ralph.iteration += 1`，`ralph.audit_history` 追加 FAILED 记录（含 uncovered_reqs 和 scope_reduction_detected）。
-    - 如果 `ralph.iteration <= ralph.max_iterations`：标注缺口，按下方"回到 coding 机制"执行。
-    - 如果 `ralph.iteration > ralph.max_iterations`：更新 `.workflow_state` 设 `state=blocked`，写 `PENDING_DECISIONS.md` 记录所有未覆盖 REQ，人工介入。
-  - **非 ralph 模式**：记录未覆盖 REQ 到 `OPEN_ISSUES.md`，写风险提示，**不阻断**进入 review。
-- **仅边界条件/去冗余未通过** → 记录到 `OPEN_ISSUES.md`，不阻断进入 review。
-
-### 回到 coding 机制
-
-当 Completion Audit 不通过需要回到 coding 时，主控 Agent 执行：
-
-1. 更新 `.workflow_state`：
-   - `current_phase=coding`
-   - `current_task="修复 Completion Audit 缺口"`
-   - `resume_context`：精炼描述具体缺口（"REQ-003 无对应测试证据，REQ-005 在 diff 中无对应改动"）
-   - `task_stack`：追加一个修复任务，列出每条未覆盖 REQ 和范围缩减项
-2. 在 `OPEN_ISSUES.md` 中记录审计失败的具体项
-3. 回到 `product-to-test-flow` 的 coding 阶段，**只补充缺口部分**（不重做已完成的实现）
-4. 补充完成后重新走 verification → Completion Audit 完整流程
-
-### Audit History 格式
-
-`.workflow_state` 的 `ralph.audit_history` 数组每项：
-
-```yaml
-- iteration: 1
-  result: FAILED
-  uncovered_reqs: ["REQ-003", "REQ-005"]
-  scope_reduction_detected: true
-  scope_reduction_detail: "07_实施计划.md 任务 4（异常处理）在 diff 中无对应改动"
-  timestamp: "2026-05-14T15:30:00"
-```
+审计检查清单、结果分流、回 coding 机制、audit history 格式等细节参见 `skills/completion-audit-flow/SKILL.md`。
 
 ## 修复循环提醒
 

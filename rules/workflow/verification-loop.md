@@ -133,7 +133,7 @@ L4（连续三次失败）行为不变：强制停止 + PENDING_DECISIONS + 人�
 `ralph.iteration` 计数的是**完整循环轮次**（coding → verification → completion audit → fail → back to coding），不是每次 L2 修复。
 
 - `ralph.max_iterations` 默认 10，防止无限循环
-- Completion Audit 失败并回到 coding 时 `ralph.iteration += 1`（在 `skills/verification-flow/SKILL.md` 的 Completion Audit 节执行）
+- Completion Audit 失败并回到 coding 时 `ralph.iteration += 1`（在 `skills/completion-audit-flow/SKILL.md` 的审计结果处理节执行）
 - L1/L2/L3 修复 → 重新 test-planner 验证（同一轮次内）**不消耗** iteration
 - 当 `ralph.iteration > ralph.max_iterations`：强制停止，写 PENDING_DECISIONS，即使是 L2 也要人工介入
 - 如果 completion audit 也失败并回到 coding，同样消耗 iteration
