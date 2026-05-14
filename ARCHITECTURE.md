@@ -49,7 +49,7 @@ All new changes use Chinese canonical names. English legacy names are blocked fo
 | Lessons learned | `13_经验沉淀.md` | active |
 | Agent evaluation | `14_Agent评估.md` | active |
 
-Meta files in `ai/`: `CONTEXT_PACKAGE.md`, `PENDING_DECISIONS.md`, `CHANGE_METRICS.json`, `OPEN_ISSUES.md`, `.workflow_state`.
+Meta files in `ai/`: `CONTEXT_PACKAGE.md`, `PENDING_DECISIONS.md`, `CHANGE_METRICS.json`, `OPEN_ISSUES.md`, `COMPLETION_AUDIT.md`, `.workflow_state`.
 
 `10_自查报告.md` is deprecated — coverage checking moved to test-planner verification mode, judgment checks moved to review phase.
 
@@ -138,8 +138,9 @@ Executed in order on every tool call:
 |---|------|---------|---------|
 | 1 | `canonical-filename-guard.py` | Write\|Edit\|MultiEdit | Blocks non-canonical filenames under `openspec/changes/*/ai/` |
 | 2 | `dangerous-command-guard.py` | Bash | Blocks destructive commands (rm -rf, force push, DROP TABLE, etc.) |
-| 3 | `checkpoint-guard.py` | Write\|Edit\|MultiEdit\|Bash | Blocks business code edits and build/test when checkpoint is pending |
+| 3 | `checkpoint-guard.py` | Write\|Edit\|MultiEdit\|Bash | Blocks business code edits and build/test when checkpoint is pending; blocks when state=blocked/failed |
 | 4 | `scope-guard.py` | Write\|Edit\|MultiEdit | Blocks edits outside `07_实施计划.md` section 7 during coding/verification |
+| 5 | `engine-guard.py` | Write\|Edit\|MultiEdit | Blocks unregistered rule ID prefixes when writing engineering spec files |
 
 ## Agents
 

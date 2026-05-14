@@ -95,7 +95,7 @@ flowchart TB
     end
 
     subgraph 编排层
-        SKILLS["skills/<br/>29 个技能，按阶段编排"]
+        SKILLS["skills/<br/>30 个技能，按阶段编排"]
     end
 
     subgraph 执行层
@@ -156,17 +156,20 @@ flowchart LR
     C2 --> D
     D --> E["📐 计划"]
     E --> F["💻 编码"]
-    F --> G["🧪 验证"]
-    G --> H["👀 审查"]
-    H --> I["📦 交付"]
+    F --> G["🧪 验证<br/>(独立Agent)"]
+    G --> H["🔎 完成审计<br/>(独立gate)"]
+    H -->|"通过"| I["👀 审查"]
+    H -->|"ralph: 不通过"| F
+    I --> J["📦 交付"]
 
     style A fill:#4CAF50,color:#fff
     style B fill:#2196F3,color:#fff
     style E fill:#FF9800,color:#fff
     style F fill:#E91E63,color:#fff
     style G fill:#9C27B0,color:#fff
-    style H fill:#F44336,color:#fff
-    style I fill:#607D8B,color:#fff
+    style H fill:#FF5722,color:#fff
+    style I fill:#F44336,color:#fff
+    style J fill:#607D8B,color:#fff
 ```
 
 ### 阶段、产出、确认角色
@@ -183,11 +186,12 @@ flowchart LR
 | 实施计划 | `07_实施计划.md` + `08_验证计划.md` | 研发负责人 |
 | 编码 | 业务代码 + 测试代码 | —（TDD 循环） |
 | 验证 | `09_验证结果.md` | —（独立 Agent 执行） |
+| 完成审计 | `COMPLETION_AUDIT.md` | —（独立 gate，ralph 模式强制执行） |
 | 审查 | `11_审查报告.md` | — |
 | 交付 | `12_发布说明.md` + `13_经验沉淀.md` | — |
 | 归档 | 归档到 archive/ | — |
 
-> 每个确认点未通过前，Hook 硬拦截业务代码修改——只能写设计文档，不能改代码。
+> 每个确认点未通过前，Hook 硬拦截业务代码修改——只能写设计文档，不能改代码。完成审计未通过时（ralph 模式），自动回 coding 补充缺口，最多 10 轮。
 
 ### Profile 三级
 
@@ -209,6 +213,8 @@ flowchart TB
 | 人工确认 | 无 | 需求+计划 | 全部 6 个确认点 |
 | 验证深度 | 目标测试 | 构建+全量测试 | +安全+DB+回滚 |
 | 审查 | 自检 | 独立 Agent | 独立 + 专项审查 |
+| Completion Audit | 跳过 | 执行（不阻断） | 强制执行（ralph 自动启用） |
+| 审查深度 | — | STANDARD/DEEP | THOROUGH（全六关+全专项） |
 | 经验沉淀 | 不强制 | 必须 | 必须 |
 | **自动升级** | — | 检测到权限/事务/DB/契约变更 → 升级标准 | 检测到安全/金钱/订单/迁移 → 升级严格 |
 
@@ -270,25 +276,56 @@ flowchart LR
 
 ---
 
-## 编码→验证收敛
+## 编码→验证→审计 完整收敛
 
 ```
-Round 1: 编码完成 → 独立 Agent 验证
-  ├─ 0 失败 → 进审查 ✓
-  ├─ P1 失败 (逻辑bug) → 主控修复 → Round 2
-  └─ P2 失败 (优化) → 可选修复，不阻断
+coding → test-planner 独立验证（三步不可跳过）
+  ├─ 第一步：覆盖率核对（测试文件存在？有测试方法？）
+  ├─ 第二步：执行测试（真实命令、真实退出码、真实输出）
+  └─ 第三步：充分性评估（"充分" / "基本充分" / "不充分"）
 
-Round 2: 修复 → 再次独立验证
-  ├─ 全部通过 → 进审查 ✓
-  ├─ 同一组件又失败 → 设计缺陷 → 回退设计阶段
-  └─ 不同组件失败 → 修复 → Round 3
+评估"充分" → Completion Audit（完成审计）
+  ├─ A. 需求覆盖审计：每条 REQ 有测试证据?
+  ├─ B. 范围缩减检测：计划任务都改代码了?
+  ├─ C. TODO 清零：没有新增 TODO/FIXME/HACK?
+  ├─ D. 边界条件：失败路径/空值/异常有覆盖?
+  └─ E. 去冗余（ralph deep）：未用 import / 过度抽象?
 
-Round 3: 最后一次修复 → 最终验证
+Audit 结果分流：
   ├─ 全部通过 → 进审查
-  └─ 仍有失败 → 强制出口 + 记录 OPEN_ISSUES → 进审查（带风险）
+  ├─ 有缺口（ralph 模式）→ iteration += 1 → 回 coding 补缺口 → 不超过 10 轮
+  ├─ 有缺口（非 ralph）→ 记录 OPEN_ISSUES，放行进审查
+  └─ iteration > 10 → state=blocked → 强制停止，人工介入
 
-L4: 连续三次 → 强制停止 → 写 PENDING_DECISIONS → 人工介入
+评估"不充分" → L1-L4 修复循环：
+  L1 构建/编译错误 → build-error-resolver 修复 → 重新验证
+  L2 测试断言失败（首次）→ 主控修复 → 重新验证（主控不自己跑测试！）
+  L3 同组件连续两次 → code-reviewer 诊断
+    ralph 模式：自动回路（设计问题→回plan / 实现问题→回coding / 测试问题→修正计划）
+  L4 连续三次失败 → state=blocked → PENDING_DECISIONS → 人工介入
 ```
+
+### Ralph 持久化完成循环
+
+Ralph 模式核心理念："不完成不停止。每次迭代必须有 fresh evidence。"
+
+**触发条件**（任一满足即启用）：
+- profile 为 strict（自动）
+- 用户说"必须完成""不要停""ralph""做完为止"
+- 涉及安全、金钱、订单、数据迁移、并发、外部集成
+
+**Ralph 行为变化**：
+
+| 维度 | 非 ralph | ralph 模式 |
+|------|---------|-----------|
+| Completion Audit | 轻量检查，只记不阻断 | 强制执行，不通过→回 coding |
+| 审查深度 floor | STANDARD（小改动轻量审） | DEEP（即使小改动也深度审） |
+| L3 失败处理 | → 人工介入决策 | → 自动回路，不等人 |
+| 最大迭代 | 无限制 | 10 轮（超出强制停止） |
+| TODO/FIXME | 不强制清零 | 强制清零 |
+| 范围缩减检测 | 无 | 逐条对比 plan 任务 vs 实际改动 |
+
+> Ralph 不适用于 minimal profile。ralph 触发条件与 minimal 同时满足时 → 自动升级到 standard。
 
 ---
 
@@ -404,13 +441,17 @@ shipkit/
 │   ├── security/              # 安全审查
 │   ├── review/                # Diff 审查
 │   ├── product/               # 验收标准
-│   ├── workflow/              # 工作流核心规则
+│   ├── workflow/              # 工作流核心规则（含 ralph + L1-L4）
 │   └── learning/              # 经验沉淀规则
 │
-├── skills/                    # 编排层 · 29 个技能
+├── docs/                      # 项目文档
+│   └── STATE_MODEL.md         # 状态管理权威定义
+│
+├── skills/                    # 编排层 · 30 个技能
 │   ├── product-to-test-flow/  # 标准全流程（主技能）
 │   ├── quick-fix-flow/        # 轻量修复
 │   ├── strict-product-to-test-flow/  # 高风险需求
+│   ├── completion-audit-flow/ # 完成审计（独立 gate）
 │   ├── review-flow/           # 代码审查
 │   ├── verification-flow/     # 独立验证
 │   └── ...                    # 24 个专项技能
