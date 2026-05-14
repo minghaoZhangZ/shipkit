@@ -99,3 +99,41 @@ test-planner（验证执行模式）输出的 `09_验证结果.md` 中存在 P0 
 2. **同一组件连续失败必须切换 agent。** L2 → L3 的切换是核心：第二次失败后，诊断者不再是实现者。
 3. **不伪造验证。** "我改了代码，应该可以了" → 这不是验证。必须重新跑完整流程。
 4. **人工介入是安全阀而非捷径。** L4 是最终防线，触发时应带来有价值的诊断信息。
+
+---
+
+# Ralph 模式增强
+
+当 `.workflow_state` 中 `ralph.enabled=true` 时，验证-修复循环的行为有变化：
+
+## Ralph 模式下的 L3
+
+L3（同一 Req ID 或同一测试文件连续两次失败）在 ralph 模式下**不等待人工介入**，而是自动决策：
+
+```
+L3 失败 → code-reviewer 诊断根因
+  ├─ 根因是设计问题 → 自动回到 plan 阶段（重新设计）
+  ├─ 根因是实现问题 → 主控重新编码 → 重新验证
+  ├─ 根因是测试问题 → 修正 08_验证计划.md → 重新验证
+  └─ 根因无法确定 → 写 PENDING_DECISIONS（等效非 ralph 的 L3 行为）
+```
+
+主控 Agent 在 ralph 模式的 L3 后：
+1. 读取 code-reviewer 的"验证阻塞诊断"节
+2. 根据诊断结论自动执行对应分支
+3. 更新 `.workflow_state` 的 `ralph.iteration`
+4. 不等待用户确认（除非根因无法确定）
+
+## Ralph 模式下的 L4
+
+L4（连续三次失败）行为不变：强制停止 + PENDING_DECISIONS + 人工介入。
+
+## Ralph 迭代保护
+
+`ralph.iteration` 计数的是**完整循环轮次**（coding → verification → completion audit → fail → back to coding），不是每次 L2 修复。
+
+- `ralph.max_iterations` 默认 10，防止无限循环
+- Completion Audit 失败并回到 coding 时 `ralph.iteration += 1`（在 `skills/verification-flow/SKILL.md` 的 Completion Audit 节执行）
+- L1/L2/L3 修复 → 重新 test-planner 验证（同一轮次内）**不消耗** iteration
+- 当 `ralph.iteration > ralph.max_iterations`：强制停止，写 PENDING_DECISIONS，即使是 L2 也要人工介入
+- 如果 completion audit 也失败并回到 coding，同样消耗 iteration

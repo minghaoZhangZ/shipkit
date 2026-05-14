@@ -86,6 +86,42 @@ Each phase delegates to a phase skill, which calls a specialist agent to produce
 
 **Verification phase**: test-planner agent runs independently in verification mode. The main agent must not run tests or interpret test output. A hard stop in `verification-flow` requires `09_验证结果.md` to contain the test-planner evaluation conclusion marker before proceeding to review.
 
+After test-planner verification passes, an optional **Completion Audit** (ralph mode) verifies that the task is truly complete — not just that tests pass. It checks REQ coverage, scope reduction, TODO zero-clear, and boundary conditions. In ralph mode, a failed audit routes back to coding instead of waiting for human intervention.
+
+## Ralph Persistence Completion Loop
+
+The ralph mode (`ralph.enabled=true` in `.workflow_state`) is an enhanced verification mode. Core philosophy: "Don't stop until done. Every iteration must have fresh evidence."
+
+### Trigger conditions
+
+- Profile is `strict` (auto-enable)
+- User says "必须完成" / "不要停" / "ralph" / "做完为止"
+- Task involves security, money, orders, data migration, concurrency, or external integration
+
+### Key behaviors
+
+| Dimension | Non-ralph | Ralph mode |
+|-----------|-----------|------------|
+| Completion Audit | Light check, non-blocking | Enforced, fail → back to coding |
+| Architect Review Tier floor | STANDARD | DEEP |
+| L3 failure handling | code-reviewer → human decision | code-reviewer → auto-loop |
+| Max iterations | None | 10 (hard stop) |
+| TODO/FIXME check | Optional | Mandatory zero-clear |
+| Scope reduction detection | None | Per-item plan vs. actual diff |
+
+### State fields
+
+```yaml
+ralph:
+  enabled: false
+  iteration: 0
+  max_iterations: 10
+  completion_audit_passed: false
+  architect_tier: STANDARD
+  context_snapshot_path: ""
+  audit_history: []
+```
+
 ## Context Package
 
 Each phase updates `CONTEXT_PACKAGE.md`. Subagents must read it first. It declares: current phase, required inputs, project rules, stage goal, output contract, and stop conditions.

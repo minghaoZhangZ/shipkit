@@ -140,6 +140,22 @@ verification_issue_count: 0
 metrics_recorded: false
 created_at: "2026-05-12T00:00"
 updated_at: "2026-05-12T00:00"
+# --- ralph 持久化完成循环 ---
+ralph:
+  enabled: false
+  iteration: 0
+  max_iterations: 10
+  completion_audit_passed: false
+  architect_tier: STANDARD
+  context_snapshot_path: ""
+  audit_history: []
+# ralph.audit_history 每项格式:
+#   - iteration: 1
+#     result: PASSED|FAILED
+#     uncovered_reqs: ["REQ-003"]
+#     scope_reduction_detected: true|false
+#     scope_reduction_detail: ""
+#     timestamp: "2026-05-14T15:30:00"
 ```
 
 ## Checkpoint
@@ -226,7 +242,12 @@ updated_at: "2026-05-12T00:00"
 1. 创建 change workspace。
 2. 将用户原始需求写入 `00_原始需求.md`。
 3. 判断 profile；不确定时让用户选择。
-4. 更新 `.workflow_state`：`current_phase=requirement`，`current_task="创建 change workspace"`，`last_completed_task=""`，`task_stack` 初始化为单任务。
+4. 检查 ralph 触发条件（参见 `rules/workflow/profiles.md` 的"ralph 持久化完成循环"节）：
+   - profile 为 strict → `ralph.enabled=true`
+   - 用户使用触发词（"必须完成""不要停""ralph""做完为止"）→ `ralph.enabled=true`
+   - affected_areas 包含安全/金钱/订单/数据迁移/并发/外部集成 → `ralph.enabled=true`
+   - 否则 `ralph.enabled=false`
+5. 更新 `.workflow_state`：`current_phase=requirement`，`current_task="创建 change workspace"`，`last_completed_task=""`，`task_stack` 初始化为单任务（含 ralph 相关字段）。
 
 ### prd
 
@@ -416,13 +437,24 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 4. 调用 `test-planner`（验证执行模式），由其独立完成覆盖率核对、测试执行和充分性评估，产出 `09_验证结果.md`。
 5. 子 Agent 返回后检查 Pre-mortem 校验通过标记；失败则补全输入重新调用。
 6. 前端改动同时调用 `frontend-verification-flow`，浏览器验证结果写入 `09_验证结果.md`。
-7. 评估结论为"充分"且无 P0/P1 失败 → 进入 review。
-8. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
+7. 评估结论为"充分"且无 P0/P1 失败 → 
+   - **minimal profile**：跳过 Completion Audit，直接进入交付阶段（`12_发布说明.md`）。minimal 没有 `02_工程需求规格.md`，审计无输入数据。
+   - **standard/strict**：进入 Completion Audit（参见 `skills/verification-flow/SKILL.md` 的"Completion Audit"节）。
+8. Completion Audit（完成审计）：
+   - 测试通过 ≠ 任务完成。对照 `02_工程需求规格.md` 逐条 REQ 映射到代码/测试证据。
+   - 审计通过 → 进入 review（步骤 10）。
+   - 审计不通过（有未覆盖 REQ 或范围缩减）：
+     - ralph 模式下：更新 `ralph.iteration += 1`，标注缺口 → 更新 `.workflow_state` 的 `current_phase=coding`、`resume_context` 为缺口描述 → 回到 coding 阶段**只补充缺口**（不重做已完成实现）
+     - 非 ralph 模式：记录到 `OPEN_ISSUES.md`，不阻断进入 review（但记录风险）
+     - `ralph.iteration > ralph.max_iterations`：强制停止，写 PENDING_DECISIONS
+9. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
    - L1 构建/基础设施错误 → `build-error-resolver` → 重新调用 test-planner 验证
    - L2 断言失败/覆盖缺口（首次）→ 主控修复 → **重新调用 test-planner 验证**（主控不自己跑测试）
    - L3 同组件连续两次失败 → `code-reviewer` 诊断，主控不得继续修
+     - ralph 模式下：自动根据诊断结论回路（回 design / 回 coding / 修正测试计划）
    - L4 连续三次失败 → 写 PENDING_DECISIONS，标记 blocked，人工介入
-9. 每完成一个子任务更新 task 跟踪字段。
+10. 进入 review 阶段。
+11. 每完成一个子任务更新 task 跟踪字段。
 
 ### review
 
