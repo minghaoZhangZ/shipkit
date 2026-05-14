@@ -27,6 +27,7 @@ CANONICAL_DEFAULTS: Dict[str, Any] = {
     "change_id": "",
     "profile": "standard",
     "current_phase": "coding",
+    "state": "active",
     "current_task": "",
     "last_completed_task": "",
     "next_action": "",

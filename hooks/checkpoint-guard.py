@@ -46,6 +46,8 @@ KNOWN_CONFIRMATION_TYPES = {
     'approve_spec',
 }
 
+KNOWN_STATES = {'active', 'blocked', 'failed', 'finished'}
+
 BOOLEAN_VALUES = {'true', 'false'}
 
 
@@ -129,6 +131,11 @@ def validate_workflow_state(state):
         ctype = state.get('confirmation_type', '')
         if ctype and ctype not in KNOWN_CONFIRMATION_TYPES:
             errors.append(f'invalid confirmation_type: {ctype}')
+
+    # Validate lifecycle state.
+    lifecycle_state = state.get('state', 'active')
+    if lifecycle_state and lifecycle_state not in KNOWN_STATES:
+        errors.append(f'invalid state: {lifecycle_state}. Known: {sorted(KNOWN_STATES)}')
 
     # Non-blocking: resume_context should be present for context recovery
     if not state.get('resume_context', ''):
@@ -225,6 +232,28 @@ def main():
 
         if state_errors:
             print_malformed_state_block(wf_file, state_errors, file_path)
+            sys.exit(2)
+
+        lifecycle_state = state.get('state', 'active')
+        if lifecycle_state == 'blocked':
+            print(
+                f"\n[CheckpointGuard] 当前 change 已被阻塞 (state: blocked)。\n"
+                f"  Change: {state.get('change_id', 'unknown')}\n"
+                f"  被拦截文件: {file_path}\n"
+                "  允许操作: 写入 openspec/changes/*/ai/ 下的 AI 文档。\n"
+                "  禁止操作: 修改业务代码。\n"
+                "\n请先处理 PENDING_DECISIONS.md 中的阻塞项后再继续。\n",
+                file=sys.stderr,
+            )
+            sys.exit(2)
+
+        if lifecycle_state == 'failed':
+            print(
+                f"\n[CheckpointGuard] 当前 change 已放弃 (state: failed)。\n"
+                f"  Change: {state.get('change_id', 'unknown')}\n"
+                "  此 change 不可恢复。如需继续，请创建新 change。\n",
+                file=sys.stderr,
+            )
             sys.exit(2)
 
         if requires_conf != 'true' or user_confirmed == 'true':

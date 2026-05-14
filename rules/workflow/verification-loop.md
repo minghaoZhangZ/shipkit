@@ -89,7 +89,7 @@ test-planner（验证执行模式）输出的 `09_验证结果.md` 中存在 P0 
 
 **处理**：
 - 主控 Agent 写 `PENDING_DECISIONS.md`，详细记录三次失败的经过、每次修复的内容、test-planner 的评估结果。
-- 标记 change 为 blocked（`.workflow_state` 中记录）。
+- 更新 `.workflow_state` 设 `state=blocked`。
 - 请求人工介入决策。
 - 在人工决策前，不得继续修改代码或运行测试。
 

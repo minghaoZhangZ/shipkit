@@ -101,7 +101,7 @@ description: Use when about to claim work is complete, write release notes, fini
 - **有未覆盖 REQ 或范围缩减**：
   - **ralph 模式**（`ralph.enabled=true`）：更新 `.workflow_state`：`ralph.completion_audit_passed=false`，`ralph.iteration += 1`，`ralph.audit_history` 追加 FAILED 记录（含 uncovered_reqs 和 scope_reduction_detected）。
     - 如果 `ralph.iteration <= ralph.max_iterations`：标注缺口，按下方"回到 coding 机制"执行。
-    - 如果 `ralph.iteration > ralph.max_iterations`：写 `PENDING_DECISIONS.md`，记录所有未覆盖 REQ，标记 change 为 blocked。人工介入。
+    - 如果 `ralph.iteration > ralph.max_iterations`：更新 `.workflow_state` 设 `state=blocked`，写 `PENDING_DECISIONS.md` 记录所有未覆盖 REQ，人工介入。
   - **非 ralph 模式**：记录未覆盖 REQ 到 `OPEN_ISSUES.md`，写风险提示，**不阻断**进入 review。
 - **仅边界条件/去冗余未通过** → 记录到 `OPEN_ISSUES.md`，不阻断进入 review。
 

@@ -29,7 +29,15 @@ description: Use when session context is lost (/clear, /compact, new session) an
 
 ### Step 3: 状态验证
 
-检查一致性：
+**首先检查 `state` 字段**：
+
+- `state=active` → 正常恢复，继续后续步骤。
+- `state=blocked` → 输出"此 change 已被阻塞"，列出 PENDING_DECISIONS.md 中的阻塞项，提示用户处理。**不自动继续工作**，等待用户解除阻塞或将 `state` 改回 `active`。
+- `state=failed` → 输出"此 change 已放弃，不可恢复"，建议创建新 change。
+- `state=finished` → 输出"此 change 已完成"，建议归档。
+- 无 `state` 字段 → 视为 `active`（向后兼容）。
+
+**一致性检查**：
 - `.workflow_state` 中的 `current_phase` 与已有 AI 文档是否匹配。
 - `task_stack` 中的 `completed` 任务是否有对应产出。
 - `phase_history` 是否与已有文档一致。

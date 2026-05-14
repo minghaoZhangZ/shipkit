@@ -79,6 +79,7 @@ schema_version: "1.0"
 change_id: "<change-id>"
 profile: standard
 current_phase: prd
+state: active
 # --- task 级跟踪字段 ---
 current_task: "输出用户角色与业务流程"
 last_completed_task: "输出背景与目标"
@@ -446,13 +447,13 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
    - 审计不通过（有未覆盖 REQ 或范围缩减）：
      - ralph 模式下：更新 `ralph.iteration += 1`，标注缺口 → 更新 `.workflow_state` 的 `current_phase=coding`、`resume_context` 为缺口描述 → 回到 coding 阶段**只补充缺口**（不重做已完成实现）
      - 非 ralph 模式：记录到 `OPEN_ISSUES.md`，不阻断进入 review（但记录风险）
-     - `ralph.iteration > ralph.max_iterations`：强制停止，写 PENDING_DECISIONS
+     - `ralph.iteration > ralph.max_iterations`：更新 `.workflow_state` 设 `state=blocked`，强制停止，写 PENDING_DECISIONS
 9. 评估结论为"不充分"或有 P0/P1 失败 → 进入修复循环（参见 `rules/workflow/verification-loop.md`）：
    - L1 构建/基础设施错误 → `build-error-resolver` → 重新调用 test-planner 验证
    - L2 断言失败/覆盖缺口（首次）→ 主控修复 → **重新调用 test-planner 验证**（主控不自己跑测试）
    - L3 同组件连续两次失败 → `code-reviewer` 诊断，主控不得继续修
      - ralph 模式下：自动根据诊断结论回路（回 design / 回 coding / 修正测试计划）
-   - L4 连续三次失败 → 写 PENDING_DECISIONS，标记 blocked，人工介入
+   - L4 连续三次失败 → 更新 `.workflow_state` 设 `state=blocked`，写 PENDING_DECISIONS，人工介入
 10. 进入 review 阶段。
 11. 每完成一个子任务更新 task 跟踪字段。
 

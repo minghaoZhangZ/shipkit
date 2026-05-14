@@ -64,6 +64,7 @@ schema_version: "1.0"
 change_id: "<change-id>"
 profile: minimal
 current_phase: requirement
+state: active
 current_task: ""
 last_completed_task: ""
 next_action: ""
