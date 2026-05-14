@@ -134,13 +134,14 @@ def run_hook(hook_path, payload, cwd):
     return proc.returncode, proc.stdout, proc.stderr
 
 
-def write_state(ai_dir, confirmed=False, checkpoint='prd_confirmation', phase='prd'):
+def write_state(ai_dir, confirmed=False, checkpoint='prd_confirmation', phase='prd', state='active'):
     ai_dir.joinpath('.workflow_state').write_text(
         '\n'.join([
             'schema_version: "1.0"',
             'change_id: demo',
             'profile: standard',
             f'current_phase: {phase}',
+            f'state: {state}',
             f'checkpoint: {checkpoint}',
             f'requires_user_confirmation: {"false" if confirmed else "true"}',
             f'user_confirmed: {"true" if confirmed else "false"}',
@@ -204,6 +205,26 @@ def check_hook_behavior():
     code, _, _ = run_hook('hooks/scope-guard.py', payload, tmp)
     if code != 2:
         fail('scope-guard did not block file outside allowed scope')
+
+    # --- state=blocked 阻断测试 ---
+    write_state(ai_dir, confirmed=True, checkpoint='plan_confirmation', phase='coding', state='blocked')
+    payload = {'tool_name': 'Edit', 'cwd': str(tmp), 'tool_input': {'file_path': str(tmp / 'src' / 'App.java')}}
+    code, _, _ = run_hook('hooks/checkpoint-guard.py', payload, tmp)
+    if code != 2:
+        fail('checkpoint-guard did not block business edit when state=blocked')
+
+    # AI 文档在 blocked 状态下仍可写
+    payload['tool_input']['file_path'] = str(ai_dir / 'PENDING_DECISIONS.md')
+    code, _, _ = run_hook('hooks/checkpoint-guard.py', payload, tmp)
+    if code != 0:
+        fail('checkpoint-guard blocked AI doc write when state=blocked')
+
+    # --- state=failed 阻断测试 ---
+    write_state(ai_dir, confirmed=True, checkpoint='plan_confirmation', phase='coding', state='failed')
+    payload = {'tool_name': 'Edit', 'cwd': str(tmp), 'tool_input': {'file_path': str(tmp / 'src' / 'App.java')}}
+    code, _, _ = run_hook('hooks/checkpoint-guard.py', payload, tmp)
+    if code != 2:
+        fail('checkpoint-guard did not block business edit when state=failed')
 
     ok('checkpoint and scope hook behavior checks pass')
     shutil.rmtree(tmp, ignore_errors=True)
