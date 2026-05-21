@@ -1,4 +1,4 @@
----
+﻿---
 name: learn-from-delivery
 description: Use when a feature, bugfix, review, or release is finished and reusable delivery lessons or promotion candidates should be extracted.
 ---
@@ -9,7 +9,7 @@ description: Use when a feature, bugfix, review, or release is finished and reus
 
 ## Flow
 
-1. 阅读 `<change-dir>/ai/` 文档，使用中文 canonical 名。旧 change（2026-05-15 前创建）可能使用英文旧名，读取时兼容但新输出必须用中文名。
+1. 阅读 `<change-dir>/` 文档，使用中文 canonical 名。旧 change（2026-05-15 前创建）可能使用英文旧名，读取时兼容但新输出必须用中文名。
 2. 读取 `CHANGE_METRICS.json`；不存在时说明原因，不得伪造指标。
 3. 总结产品、架构、实现、测试、审查中的有效模式。
 4. 识别重复问题和低质量 Agent 输出。

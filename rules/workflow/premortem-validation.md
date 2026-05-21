@@ -1,4 +1,4 @@
-# Pre-mortem Validation Protocol
+﻿# Pre-mortem Validation Protocol
 
 子 Agent 在开始任何产出性工作前，必须执行输入完整性校验。校验不通过时，禁止产出设计文档。
 
@@ -18,16 +18,16 @@ CONTEXT_PACKAGE.md 的 `## Input Manifest` 节使用以下结构：
 
 ## Agent 校验步骤
 
-1. 读取 `<change-dir>/ai/CONTEXT_PACKAGE.md`，定位 `## Input Manifest` 节。
+1. 读取 `<change-dir>/CONTEXT_PACKAGE.md`，定位 `## Input Manifest` 节。
 2. 对每一行 `required` 文件：Read 该文件，验证最小内容判据是否通过。
-3. 对每一行 `conditional` 文件：根据 `<change-dir>/ai/.workflow_state` 中的 `affected_areas` 和当前阶段上下文判断是否需要。需要则同 `required` 处理；不需要则在输出中标注跳过。
+3. 对每一行 `conditional` 文件：根据 `<change-dir>/.workflow_state` 中的 `affected_areas` 和当前阶段上下文判断是否需要。需要则同 `required` 处理；不需要则在输出中标注跳过。
 4. 校验完成后，在输出文档的"已读输入"节写入结构化校验结果。
 
 ## 校验失败协议
 
 任一 `required` 文件缺失或判据不通过时：
 
-1. 写入 `<change-dir>/ai/PENDING_DECISIONS.md`（追加模式）：
+1. 写入 `<change-dir>/PENDING_DECISIONS.md`（追加模式）：
    ```
    ## [Pre-mortem] 输入完整性校验失败 — <yyyy-mm-dd HH:MM>
 

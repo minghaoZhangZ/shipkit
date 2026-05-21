@@ -1,4 +1,4 @@
----
+﻿---
 name: completion-audit-flow
 description: Use after verification passes, before review. Audits whether the task is truly complete — checks REQ coverage, scope reduction, TODO zero-clear, and boundary conditions.
 ---
@@ -20,7 +20,7 @@ description: Use after verification passes, before review. Audits whether the ta
 
 ## 输入
 
-读取 `<change-dir>/ai/CONTEXT_PACKAGE.md`，验证以下输入存在且满足最小内容判据：
+读取 `<change-dir>/CONTEXT_PACKAGE.md`，验证以下输入存在且满足最小内容判据：
 
 | 文件 | 必需性 | 最小内容判据 |
 |------|--------|-------------|
@@ -105,7 +105,7 @@ description: Use after verification passes, before review. Audits whether the ta
 
 ## 输出
 
-审计结果写入 `<change-dir>/ai/COMPLETION_AUDIT.md`：
+审计结果写入 `<change-dir>/COMPLETION_AUDIT.md`：
 
 ```markdown
 # Completion Audit 结果

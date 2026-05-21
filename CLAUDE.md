@@ -49,7 +49,7 @@
 
 ## Session Resume Rule
 
-会话开始、/clear 或 /compact 后，如果工作目录下存在 `openspec/changes/*/ai/.workflow_state`，在回复用户前执行以下恢复流程：
+会话开始、/clear 或 /compact 后，如果工作目录下存在 `openspec/changes/*/.workflow_state`，在回复用户前执行以下恢复流程：
 
 1. 查找最近活跃的 `.workflow_state` 文件（按修改时间排序，排除 archive）。
 2. 读取 `.workflow_state` 获取 `current_phase`、`current_task`、`last_completed_task`、`task_stack`、`resume_context`。

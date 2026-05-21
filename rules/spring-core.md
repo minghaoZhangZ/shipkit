@@ -1,4 +1,4 @@
-# Spring Core Rules
+﻿# Spring Core Rules
 
 ## API Design
 
@@ -44,4 +44,4 @@
 
 ## JPA Migration
 
-数据库变更必须写入 `<change-dir>/ai/06_DATA_CONTRACT.md`：字段变更、索引、约束、迁移脚本、回滚方案、兼容性影响。
+数据库变更必须写入 `<change-dir>/06_DATA_CONTRACT.md`：字段变更、索引、约束、迁移脚本、回滚方案、兼容性影响。

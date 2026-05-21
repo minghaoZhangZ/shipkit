@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """PreToolUse hook: block AI doc writes with non-canonical filenames.
 
-Only checks Markdown and JSON files under openspec/changes/<id>/ai/.
+Only checks Markdown and JSON files under openspec/changes/<id>/.
 Canonical names per product-to-test-flow document standard.
 """
 
@@ -12,7 +12,7 @@ import re
 import sys
 from pathlib import Path
 
-# Canonical document names for openspec/changes/<id>/ai/.
+# Canonical document names for openspec/changes/<id>/.
 CANONICAL_NAMES = {
     # Core AI documents (Chinese canonical names).
     "00_原始需求.md",
@@ -72,7 +72,7 @@ def find_project_root(cwd: str) -> str:
 
 
 def is_ai_subdir(file_path: str, project_root: str) -> bool:
-    """Check if the file is under openspec/changes/<id>/ai/."""
+    """Check if the file is under openspec/changes/<id>/."""
     normalized = str(Path(file_path).resolve())
     ai_base = str((Path(project_root) / "openspec" / "changes").resolve())
     try:
@@ -80,8 +80,8 @@ def is_ai_subdir(file_path: str, project_root: str) -> bool:
     except ValueError:
         return False
     parts = rel.replace("\\", "/").split("/")
-    # rel should be like "<change-id>/ai/<filename>"
-    return len(parts) >= 3 and parts[1] == "ai"
+    # rel should be like "<change-id>/<filename>"
+    return len(parts) >= 2
 
 
 def main() -> int:

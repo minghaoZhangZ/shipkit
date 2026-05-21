@@ -1,4 +1,4 @@
-# State Model
+﻿# State Model
 
 > ShipKit 工作流状态管理权威定义。单用户单主控模型，不涉及多 session 并发。
 
@@ -8,7 +8,7 @@
 
 | 文件 | 路径 | 用途 |
 |------|------|------|
-| `.workflow_state` | `openspec/changes/<change-id>/ai/.workflow_state` | 工作流运行时状态（Hook 校验、resume 恢复） |
+| `.workflow_state` | `openspec/changes/<change-id>/.workflow_state` | 工作流运行时状态（Hook 校验、resume 恢复） |
 | `metadata.json` | `openspec/changes/<change-id>/metadata.json` | Change 元信息（展示用，不参与 Hook 校验） |
 
 **.workflow_state 格式**：YAML 行解析（每行 `key: value`）。Hook 按行读取，不解析嵌套 YAML 结构。
@@ -200,7 +200,7 @@ ShipKit 单用户单主控模型，不涉及多 session 并发。层级简单：
 ```
 .active .workflow_state（每个 change 独立）
   │
-  └── Hook 读取时：<change-dir>/ai/.workflow_state（唯一来源）
+  └── Hook 读取时：<change-dir>/.workflow_state（唯一来源）
   │
   └── resume-flow 恢复时：按 updated_at 排序，取最新非归档 change
 ```

@@ -1,4 +1,4 @@
-# Frontend UI/UX Quality Rules
+﻿# Frontend UI/UX Quality Rules
 
 These rules apply to frontend page, component, interaction, and browser-verification changes.
 
@@ -27,4 +27,4 @@ These rules apply to frontend page, component, interaction, and browser-verifica
 
 - Frontend completion requires command evidence plus browser evidence when behavior changes.
 - Browser evidence must include URL, viewport, operation, expected result, actual result, and console/runtime issues.
-- If a path cannot be verified, record the exact reason in `<change-dir>/ai/09_验证结果.md`.
+- If a path cannot be verified, record the exact reason in `<change-dir>/09_验证结果.md`.

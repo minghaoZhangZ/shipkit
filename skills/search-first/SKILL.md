@@ -1,4 +1,4 @@
----
+﻿---
 name: search-first
 description: Use when adding new functionality, abstractions, libraries, tools, integrations, algorithms, or infrastructure that might already exist.
 ---
@@ -25,7 +25,7 @@ description: Use when adding new functionality, abstractions, libraries, tools, 
 
 ## Output
 
-建议写入 `<change-dir>/ai/03_代码库调研.md`：
+建议写入 `<change-dir>/03_代码库调研.md`：
 
 ```markdown
 ## Search-first 结论

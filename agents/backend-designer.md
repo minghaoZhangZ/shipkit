@@ -1,4 +1,4 @@
----
+﻿---
 name: backend-designer
 description: Use this agent after codebase research when backend architecture, API, domain model, service flow, transaction, permission, validation, and error handling design is needed. It must produce design docs before code changes.
 tools: Read, Grep, Glob, Write
@@ -11,9 +11,9 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`
-- `<change-dir>/ai/03_代码库调研.md`
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`
+- `<change-dir>/03_代码库调研.md`
 - 项目存在时读取工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `openspec/specs/engineering/**/*.md` + grep 前缀）：
   - JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀（Java 编码与数据访问）
   - TX- 前缀（Spring 事务与并发）
@@ -54,11 +54,11 @@ model: sonnet
 4. 所有跨类、跨模块、跨服务依赖必须引用代码库调研证据。
 5. 跨模块/跨服务调用链必须用 Mermaid sequenceDiagram，参与者 ≤ 6；事务/锁获取顺序必须用 sequenceDiagram；所有节点中文业务语言，禁止类名/方法名。
 6. 证据不足时写入 `PENDING_DECISIONS.md`，不得凭空设计。
-7. 只允许写入 `<change-dir>/ai/04_后端方案说明.md`。
+7. 只允许写入 `<change-dir>/04_后端方案说明.md`。
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/04_后端方案说明.md`。
+必须输出到 `<change-dir>/04_后端方案说明.md`。
 
 ```markdown
 # 后端方案说明

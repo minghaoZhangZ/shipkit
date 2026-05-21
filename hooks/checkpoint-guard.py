@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """PreToolUse hook: block business-code work while a workflow checkpoint waits.
 
 Reads tool call JSON from stdin. It allows AI document edits under
-openspec/changes/*/ai/ while a confirmation is pending, but blocks business-code
+openspec/changes/*/ while a confirmation is pending, but blocks business-code
 edits and build/test/commit style commands until the checkpoint is confirmed.
 """
 
@@ -65,7 +65,7 @@ def find_active_workflow_state(project_root):
         return None
 
     candidates = []
-    for wf_file in changes_dir.glob('*/ai/.workflow_state'):
+    for wf_file in changes_dir.glob('*/.workflow_state'):
         if 'archive' in str(wf_file).replace('\\', '/').split('/'):
             continue
         try:
@@ -155,7 +155,7 @@ def print_malformed_state_block(wf_file, errors, blocked_target):
         f"  State file: {wf_file}\n"
         f"  Blocked target: {blocked_target}\n"
         f"  Errors: {'; '.join(errors)}\n"
-        "  Allowed operation: fix files under openspec/changes/*/ai/ "
+        "  Allowed operation: fix files under openspec/changes/*/ "
         "including .workflow_state\n",
         file=sys.stderr,
     )
@@ -169,7 +169,8 @@ def is_ai_doc(file_path, project_root):
     except ValueError:
         return False
     parts = rel.replace('\\', '/').split('/')
-    return len(parts) >= 3 and parts[1] == 'ai'
+    # rel should be like "<change-id>/<filename>"
+    return len(parts) >= 2
 
 
 def is_bash_safe(command):
@@ -240,7 +241,7 @@ def main():
                 f"\n[CheckpointGuard] 当前 change 已被阻塞 (state: blocked)。\n"
                 f"  Change: {state.get('change_id', 'unknown')}\n"
                 f"  被拦截文件: {file_path}\n"
-                "  允许操作: 写入 openspec/changes/*/ai/ 下的 AI 文档。\n"
+                "  允许操作: 写入 openspec/changes/*/ 下的 AI 文档。\n"
                 "  禁止操作: 修改业务代码。\n"
                 "\n请先处理 PENDING_DECISIONS.md 中的阻塞项后再继续。\n",
                 file=sys.stderr,
@@ -265,7 +266,7 @@ def main():
             f"  确认角色: {confirmation_role}\n"
             f"  确认文档: {confirmation_docs}\n"
             f"  被拦截文件: {file_path}\n"
-            "  允许操作: 写入 openspec/changes/*/ai/ 下的 AI 文档。\n"
+            "  允许操作: 写入 openspec/changes/*/ 下的 AI 文档。\n"
             "  禁止操作: 修改业务代码。\n"
             "\n请先用 AskUserQuestion 向用户确认后再继续。\n",
             file=sys.stderr,

@@ -1,4 +1,4 @@
-# Claude Workflow Architecture
+﻿# Claude Workflow Architecture
 
 This directory defines a Claude Code workflow system with role-based checkpoints, skills, agents, rules, and hooks.
 
@@ -20,7 +20,7 @@ This directory defines a Claude Code workflow system with role-based checkpoints
 `openspec-new-change` creates the change directory:
 
 ```
-openspec/changes/<change-id>/ai/
+openspec/changes/<change-id>/
 openspec/changes/<change-id>/specs/
 ```
 
@@ -49,7 +49,7 @@ All new changes use Chinese canonical names. English legacy names are blocked fo
 | Lessons learned | `13_经验沉淀.md` | active |
 | Agent evaluation | `14_Agent评估.md` | active |
 
-Meta files in `ai/`: `CONTEXT_PACKAGE.md`, `PENDING_DECISIONS.md`, `CHANGE_METRICS.json`, `OPEN_ISSUES.md`, `COMPLETION_AUDIT.md`, `.workflow_state`.
+Meta files (sibling to numbered docs): `CONTEXT_PACKAGE.md`, `PENDING_DECISIONS.md`, `CHANGE_METRICS.json`, `OPEN_ISSUES.md`, `COMPLETION_AUDIT.md`, `.workflow_state`.
 
 `10_自查报告.md` is deprecated — coverage checking moved to test-planner verification mode, judgment checks moved to review phase.
 
@@ -72,7 +72,7 @@ Key fields: `schema_version`, `change_id`, `profile`, `current_phase`, `current_
 
 Standard/strict profiles enforce all applicable checkpoints before coding. Minimal skips checkpoints.
 
-Checkpoint enforcement: `checkpoint-guard.py` blocks business-code edits and build/test commands while a checkpoint is pending. Only AI docs under `openspec/changes/*/ai/` may be written.
+Checkpoint enforcement: `checkpoint-guard.py` blocks business-code edits and build/test commands while a checkpoint is pending. Only AI docs under `openspec/changes/*/` may be written.
 
 ## Phase Routing (product-to-test-flow)
 
@@ -136,7 +136,7 @@ Executed in order on every tool call:
 
 | # | Hook | Matcher | Purpose |
 |---|------|---------|---------|
-| 1 | `canonical-filename-guard.py` | Write\|Edit\|MultiEdit | Blocks non-canonical filenames under `openspec/changes/*/ai/` |
+| 1 | `canonical-filename-guard.py` | Write\|Edit\|MultiEdit | Blocks non-canonical filenames under `openspec/changes/*/` |
 | 2 | `dangerous-command-guard.py` | Bash | Blocks destructive commands (rm -rf, force push, DROP TABLE, etc.) |
 | 3 | `checkpoint-guard.py` | Write\|Edit\|MultiEdit\|Bash | Blocks business code edits and build/test when checkpoint is pending; blocks when state=blocked/failed |
 | 4 | `scope-guard.py` | Write\|Edit\|MultiEdit | Blocks edits outside `07_实施计划.md` section 7 during coding/verification |

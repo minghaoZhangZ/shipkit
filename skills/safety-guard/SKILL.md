@@ -1,4 +1,4 @@
----
+﻿---
 name: safety-guard
 description: Use when a task may run destructive commands, edit broad file ranges, touch production-like data, perform migrations, or operate autonomously.
 ---
@@ -23,7 +23,7 @@ description: Use when a task may run destructive commands, edit broad file range
 
 ## Edit Scope Rule
 
-实现阶段必须遵守 `<change-dir>/ai/07_实施计划.md` 的允许修改范围。
+实现阶段必须遵守 `<change-dir>/07_实施计划.md` 的允许修改范围。
 
 如果需要修改范围外文件：
 
@@ -36,7 +36,7 @@ description: Use when a task may run destructive commands, edit broad file range
 
 当 `.workflow_state` 中 `requires_user_confirmation=true` 且 `user_confirmed=false`：
 
-- 只能写 `openspec/changes/*/ai/` 下的 AI 文档。
+- 只能写 `openspec/changes/*/` 下的 AI 文档。
 - 不得修改业务代码。
 - 不得运行构建、测试、安装依赖、提交等修改性命令。
 

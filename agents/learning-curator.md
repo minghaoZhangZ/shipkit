@@ -1,4 +1,4 @@
----
+﻿---
 name: learning-curator
 description: Use this agent after delivery to extract reusable lessons, evaluate agent output quality, and recommend which lessons should become rules, skills, agents, or hooks. This agent must not modify code unless explicitly asked.
 tools: Read, Grep, Glob, Write
@@ -28,7 +28,7 @@ model: sonnet
 
 ## 任务
 
-1. 阅读本次交付的 `<change-dir>/ai/` 文档，优先中文 canonical 名，旧 change 可兼容英文旧名。
+1. 阅读本次交付的 `<change-dir>/` 文档，优先中文 canonical 名，旧 change 可兼容英文旧名。
 2. 读取 `CHANGE_METRICS.json`；缺失时说明原因，不伪造指标。
 3. 总结有效规则、失败模式、踩坑点、复用模式。
 4. 评估各 Agent 输出是否清晰、有证据、可执行。
@@ -39,8 +39,8 @@ model: sonnet
 
 ## 输出
 
-- `<change-dir>/ai/13_经验沉淀.md`
-- `<change-dir>/ai/14_Agent评估.md`
+- `<change-dir>/13_经验沉淀.md`
+- `<change-dir>/14_Agent评估.md`
 
 旧 change 可兼容：
 

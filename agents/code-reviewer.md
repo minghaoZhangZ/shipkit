@@ -1,4 +1,4 @@
----
+﻿---
 name: code-reviewer
 description: Use this agent after implementation, before handoff, or during design gates to perform evidence-based review of requirement coverage, implementation quality, and workflow compliance.
 tools: Read, Grep, Glob, Bash, Write
@@ -70,7 +70,7 @@ model: sonnet
 
 ## 输出
 
-输出或追加到 `<change-dir>/ai/11_审查报告.md`。
+输出或追加到 `<change-dir>/11_审查报告.md`。
 
 采用评审规范 REVIEW- 前缀文件的第 4 节"审查输出格式"定义的统一输出格式。
 

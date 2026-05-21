@@ -1,4 +1,4 @@
----
+﻿---
 name: product-to-test-flow
 description: Use when a normal product requirement needs end-to-end delivery from product discovery through tests, review, release notes, and learning.
 ---
@@ -12,7 +12,7 @@ description: Use when a normal product requirement needs end-to-end delivery fro
 - **角色化确认**：产品确认 PRD，技术确认工程规格，前端确认交互，后端确认架构，前后端确认契约，负责人确认开工。
 - **渐进式披露**：当前阶段只加载当前阶段的 skill、agent、输入包和规范。
 - **上下文不丢失**：每阶段开始前更新 `CONTEXT_PACKAGE.md`，每阶段输出必须有 Req ID 覆盖映射。
-- **AI 文档先行**：所有 checkpoint 未确认前，只能写 `openspec/changes/*/ai/` 下的 AI 文档，不得修改业务代码。
+- **AI 文档先行**：所有 checkpoint 未确认前，只能写 `openspec/changes/*/` 下的 AI 文档，不得修改业务代码。
 - **主控实现**：designer/reviewer/planner 只产出文档或审查意见；业务代码由主控 Agent 按 `07_实施计划.md` 执行。
 
 ## 文档标准
@@ -179,7 +179,7 @@ ralph:
 
 ## Context Package
 
-每个阶段开始前更新 `<change-dir>/ai/CONTEXT_PACKAGE.md`：
+每个阶段开始前更新 `<change-dir>/CONTEXT_PACKAGE.md`：
 
 ```markdown
 # Context Package
@@ -305,7 +305,7 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 1. 检查 `affected_areas`：
    - 含 `backend`、`database`、`integration`、`security` → 需要后端设计
    - 含 `frontend`、`ui`、`ux`、`page`、`component` → 需要前端设计
-2. 如果**同时需要后端和前端设计**：在单条消息中并行启动两个 Agent（`backend-designer` 和 `frontend-designer`），它们独立运行、共享 `<change-dir>/ai/` 目录。
+2. 如果**同时需要后端和前端设计**：在单条消息中并行启动两个 Agent（`backend-designer` 和 `frontend-designer`），它们独立运行、共享 `<change-dir>/` 目录。
 3. 如果只需要一方：只启动对应 Agent。
 4. 等待并行 Agent 全部返回后，分别触发对应 checkpoint。
 

@@ -1,4 +1,4 @@
-# Hooks
+﻿# Hooks
 
 PreToolUse hooks that provide hard enforcement of workflow guardrails.
 
@@ -9,7 +9,7 @@ PreToolUse hooks that provide hard enforcement of workflow guardrails.
 - `dangerous-command-guard.py` — blocks destructive commands (git reset --hard, push --force, rm -rf, DROP TABLE, curl|sh, etc.)
 - `checkpoint-guard.py` — blocks business code edits and build commands when user confirmation is pending (reads .workflow_state)
 - `scope-guard.py` — blocks edits to files outside the implementation plan's allowed scope (active in coding/verification phases)
-- `canonical-filename-guard.py` — blocks non-canonical filenames under openspec/changes/*/ai/
+- `canonical-filename-guard.py` — blocks non-canonical filenames under openspec/changes/*/
 - `engine-guard.py` — validates rule ID prefixes when writing openspec/specs/engineering/**/*.md against engineering.json rulePrefixIndex
 
 ### How they work
@@ -39,7 +39,7 @@ Key state fields hooks read:
 
 If an active `.workflow_state` exists but these core fields are missing,
 empty, or invalid, checkpoint/scope guards fail closed for business-code
-operations. Writing AI documents under `openspec/changes/*/ai/` remains
+operations. Writing AI documents under `openspec/changes/*/` remains
 allowed so the workflow state can be repaired.
 
 Project-level consistency governance is intentionally **not** required by these hooks.
@@ -62,6 +62,6 @@ Project-level consistency governance is intentionally **not** required by these 
 ## Design principles
 
 - Hooks do deterministic checks only.
-- Judgement-based findings go to `<change-dir>/ai/13_LESSONS_LEARNED.md` for new changes; old changes may keep `12_LESSONS_LEARNED.md`.
+- Judgement-based findings go to `<change-dir>/13_LESSONS_LEARNED.md` for new changes; old changes may keep `12_LESSONS_LEARNED.md`.
 - No full Maven/Gradle builds triggered automatically.
 - Keep scripts lightweight (<1s execution).

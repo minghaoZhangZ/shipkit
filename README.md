@@ -1,4 +1,4 @@
-# ShipKit · 舰桥
+﻿# ShipKit · 舰桥
 
 <p align="center">
   <img width="120" alt="舰桥" src="https://github.com/user-attachments/assets/e2931431-8e3c-40f6-a133-f6bd82d624d5" />
@@ -271,7 +271,7 @@ flowchart LR
 | 1 | `dangerous-command-guard` | `rm -rf`、`DROP TABLE`、`git push -f`、`curl\|sh` 等 17 种危险命令 | 始终 |
 | 2 | `checkpoint-guard` | 业务代码修改 + 构建/测试命令 | 确认点未通过 |
 | 3 | `scope-guard` | 实施计划允许范围外的文件编辑 | 编码/验证阶段 |
-| 4 | `canonical-filename-guard` | 非标准中文文档名 | changes/*/ai/ 下的 .md/.json |
+| 4 | `canonical-filename-guard` | 非标准中文文档名 | changes/*/ 下的 .md/.json |
 | 5 | `engine-guard` | 未注册规则前缀写入 | engineering/**/*.md |
 
 ---

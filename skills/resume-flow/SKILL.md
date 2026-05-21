@@ -1,4 +1,4 @@
----
+﻿---
 name: resume-flow
 description: Use when session context is lost (/clear, /compact, new session) and workflow progress needs to be recovered from .workflow_state.
 ---
@@ -17,15 +17,15 @@ description: Use when session context is lost (/clear, /compact, new session) an
 
 ### Step 1: 定位 change
 
-1. 搜索 `openspec/changes/*/ai/.workflow_state`，排除 archive。
+1. 搜索 `openspec/changes/*/.workflow_state`，排除 archive。
 2. 按修改时间排序，取最新。
 3. 确定 `<change-dir>`。
 
 ### Step 2: 读取状态
 
 1. 解析 `.workflow_state`。
-2. 读取 `<change-dir>/ai/CONTEXT_PACKAGE.md`。
-3. 列出 `<change-dir>/ai/` 下已有文档。
+2. 读取 `<change-dir>/CONTEXT_PACKAGE.md`。
+3. 列出 `<change-dir>/` 下已有文档。
 
 ### Step 3: 状态验证
 
@@ -45,7 +45,7 @@ description: Use when session context is lost (/clear, /compact, new session) an
 
 ### Step 4: 检查 pending 决策
 
-1. 读取 `<change-dir>/ai/PENDING_DECISIONS.md`（如存在）。
+1. 读取 `<change-dir>/PENDING_DECISIONS.md`（如存在）。
 2. 如果有 pending 项且 `pending_decisions_count > 0`：提示用户先处理。
 
 ### Step 5: 检查 checkpoint

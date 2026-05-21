@@ -1,4 +1,4 @@
----
+﻿---
 name: quick-fix-flow
 description: Use when a small bug, narrow refactor, simple API adjustment, small UI fix, or focused failing test needs a lightweight workflow.
 ---
@@ -23,7 +23,7 @@ description: Use when a small bug, narrow refactor, simple API adjustment, small
 
 ## 流程
 
-1. 写入 `<change-dir>/ai/00_原始需求.md`。
+1. 写入 `<change-dir>/00_原始需求.md`。
 2. 创建/更新 `.workflow_state`：
 
 ```yaml

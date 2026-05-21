@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Migrate .workflow_state to schema_version 1.0.
 
@@ -7,7 +7,7 @@ Usage:
   python migrate-workflow-state.py <project-root> --dry-run
   python migrate-workflow-state.py <project-root> --change <change-id>
 
-Reads openspec/changes/<change-id>/ai/.workflow_state (non-archive),
+Reads openspec/changes/<change-id>/.workflow_state (non-archive),
 detects missing fields relative to the 1.0 schema, and writes back
 the migrated state.
 """
@@ -148,7 +148,7 @@ def find_workflow_states(project_root: Path, change_id: Optional[str] = None) ->
         return []
 
     results = []
-    for wf_file in changes_dir.glob("*/ai/.workflow_state"):
+    for wf_file in changes_dir.glob("*/.workflow_state"):
         path_str = str(wf_file).replace("\\", "/")
         if "/archive/" in path_str:
             continue

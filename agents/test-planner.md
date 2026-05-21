@@ -18,10 +18,10 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`
-- `<change-dir>/ai/03_代码库调研.md`
-- `<change-dir>/ai/07_实施计划.md`
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`
+- `<change-dir>/03_代码库调研.md`
+- `<change-dir>/07_实施计划.md`
 
 兼容旧 change：
 
@@ -60,7 +60,7 @@ model: sonnet
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/08_验证计划.md`。
+必须输出到 `<change-dir>/08_验证计划.md`。
 
 ```markdown
 # 验证计划
@@ -114,15 +114,15 @@ model: sonnet
 
 只读以下文件，明确禁止读取实现代码：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`（验收标准）
-- `<change-dir>/ai/08_验证计划.md`（测试用例表，含预期测试文件路径）
-- `<change-dir>/ai/07_实施计划.md`（只读"允许修改的文件范围"和"验证命令"节）
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`（验收标准）
+- `<change-dir>/08_验证计划.md`（测试用例表，含预期测试文件路径）
+- `<change-dir>/07_实施计划.md`（只读"允许修改的文件范围"和"验证命令"节）
 
 禁止读取：
-- `<change-dir>/ai/04_后端方案说明.md`
-- `<change-dir>/ai/05_前端方案说明.md`
-- `<change-dir>/ai/06_接口与数据契约.md`
+- `<change-dir>/04_后端方案说明.md`
+- `<change-dir>/05_前端方案说明.md`
+- `<change-dir>/06_接口与数据契约.md`
 - 任何项目源码文件（Java/Vue/JS/TS/CSS 等，但测试文件除外）
 
 ## 启动前校验
@@ -186,7 +186,7 @@ model: sonnet
 
 ## 输出
 
-写入 `<change-dir>/ai/09_验证结果.md`：
+写入 `<change-dir>/09_验证结果.md`：
 
 ```markdown
 # 验证结果

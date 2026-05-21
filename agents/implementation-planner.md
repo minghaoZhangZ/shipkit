@@ -1,4 +1,4 @@
----
+﻿---
 name: implementation-planner
 description: Use this agent after product spec, codebase research, confirmed design docs, and contracts are ready to create a safe implementation plan with allowed file scopes, dependencies, validation commands, and stop conditions. This agent must not modify code.
 tools: Read, Grep, Glob, Write
@@ -11,13 +11,13 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`
-- `<change-dir>/ai/03_代码库调研.md`
-- `<change-dir>/ai/04_后端方案说明.md`（如适用）
-- `<change-dir>/ai/05_前端方案说明.md`（如适用）
-- `<change-dir>/ai/06_接口与数据契约.md`（如适用）
-- `<change-dir>/ai/PENDING_DECISIONS.md`
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`
+- `<change-dir>/03_代码库调研.md`
+- `<change-dir>/04_后端方案说明.md`（如适用）
+- `<change-dir>/05_前端方案说明.md`（如适用）
+- `<change-dir>/06_接口与数据契约.md`（如适用）
+- `<change-dir>/PENDING_DECISIONS.md`
 
 兼容旧 change：读取对应英文旧名。
 
@@ -61,11 +61,11 @@ model: sonnet
 4. 标明不允许修改的文件。
 5. 标明依赖关系、验证命令、停止条件。
 6. 保留“顺带重构受控出口”，默认空。
-7. 只允许写入 `<change-dir>/ai/07_实施计划.md`。
+7. 只允许写入 `<change-dir>/07_实施计划.md`。
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/07_实施计划.md`。
+必须输出到 `<change-dir>/07_实施计划.md`。
 
 ```markdown
 # 实施计划

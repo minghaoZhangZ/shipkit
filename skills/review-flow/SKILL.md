@@ -1,4 +1,4 @@
----
+﻿---
 name: review-flow
 description: Use when staged or unstaged changes need evidence-based review before merge, release, or handoff.
 ---
@@ -37,7 +37,7 @@ Tier 决定后写入 `11_审查报告.md` 的审查总览中。
 1. 检查 `.workflow_state` 中 `ralph.enabled` 是否为 true。如是，审查 floor 为 DEEP。
 2. 计算变更规模（`git diff --stat`），结合 ralph floor 确定 Architect Review Tier。
 3. 查看 `git status` 和 `git diff`，或等价的变更证据。
-4. 阅读相关 `<change-dir>/ai/` 文档和 `CONTEXT_PACKAGE.md`。
+4. 阅读相关 `<change-dir>/` 文档和 `CONTEXT_PACKAGE.md`。
 5. 主控 Agent 在调用 reviewer 前，确认 CONTEXT_PACKAGE.md 的 Input Manifest 已包含工程规范（通过 engineering.json rulePrefixIndex 发现）：
    - FORBID- 前缀（禁止模式）
    - REVIEW-/REV-SUP- 前缀（代码审查清单）

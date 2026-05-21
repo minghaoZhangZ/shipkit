@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """PreToolUse hook: block edits outside the confirmed implementation plan.
 
@@ -41,7 +41,7 @@ def find_active_workflow_state(project_root):
         return None, None
 
     candidates = []
-    for wf_file in changes_dir.glob('*/ai/.workflow_state'):
+    for wf_file in changes_dir.glob('*/.workflow_state'):
         if 'archive' in str(wf_file).replace('\\', '/').split('/'):
             continue
         try:
@@ -112,16 +112,16 @@ def is_ai_doc(file_path, project_root):
     except ValueError:
         return False
     parts = rel.replace('\\', '/').split('/')
-    return len(parts) >= 3 and parts[1] == 'ai'
+    # rel should be like "<change-id>/<filename>"
+    return len(parts) >= 2
 
 
 def find_plan_path(change_dir):
-    ai_dir = Path(change_dir) / 'ai'
     for filename in PLAN_FILENAMES:
-        candidate = ai_dir / filename
+        candidate = Path(change_dir) / filename
         if candidate.is_file():
             return str(candidate)
-    return str(ai_dir / PLAN_FILENAMES[0])
+    return str(Path(change_dir) / PLAN_FILENAMES[0])
 
 
 def parse_allowed_files(plan_path):
@@ -214,7 +214,7 @@ def main():
             f"  State file: {wf_file}\n"
             f"  File: {file_path}\n"
             f"  Errors: {'; '.join(state_errors)}\n"
-            "  Allowed operation: fix files under openspec/changes/*/ai/ including .workflow_state\n",
+            "  Allowed operation: fix files under openspec/changes/*/ including .workflow_state\n",
             file=sys.stderr,
         )
         sys.exit(2)

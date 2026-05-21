@@ -1,4 +1,4 @@
----
+﻿---
 name: codebase-researcher
 description: Use this agent before implementation or architecture design to inspect the existing codebase, identify module boundaries, reusable APIs, existing patterns, tests, and risks. This agent is read-only and must not modify business code.
 tools: Read, Grep, Glob, Bash, Write
@@ -11,12 +11,12 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`
 
 兼容旧 change：
 
-- `<change-dir>/ai/02_SPEC.md`
+- `<change-dir>/02_SPEC.md`
 
 ## 启动前校验（必须执行，不可跳过）
 
@@ -44,13 +44,13 @@ model: sonnet
 5. 判断哪些类只是 implementation detail。
 6. 记录证据路径和行号；证据不足时明确说明。
 7. 涉及 ≥ 3 个模块的依赖关系时需在涉及模块节加 Mermaid flowchart TB 图，节点/箭头全部使用中文业务语言，禁止类名/方法名/路由路径；节点 ≤ 10。
-8. 只允许写入 `<change-dir>/ai/03_代码库调研.md` 和必要的 `PENDING_DECISIONS.md`。
+8. 只允许写入 `<change-dir>/03_代码库调研.md` 和必要的 `PENDING_DECISIONS.md`。
 
 允许使用只读命令，例如 `rg`、`ls`、`git diff`、`git status`、`cat`、`Get-Content`。
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/03_代码库调研.md`。
+必须输出到 `<change-dir>/03_代码库调研.md`。
 
 ```markdown
 # 代码库调研

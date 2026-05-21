@@ -1,4 +1,4 @@
----
+﻿---
 name: frontend-designer
 description: Use this agent after codebase research when frontend page structure, component design, routing, state, API integration, validation, and UI interaction design is needed. It must not modify code.
 tools: Read, Grep, Glob, Write
@@ -11,10 +11,10 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/01_PRD产品需求.md`
-- `<change-dir>/ai/02_工程需求规格.md`
-- `<change-dir>/ai/03_代码库调研.md`
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/01_PRD产品需求.md`
+- `<change-dir>/02_工程需求规格.md`
+- `<change-dir>/03_代码库调研.md`
 - 项目存在时读取工程规范（通过 `engineering.json` rulePrefixIndex 发现，glob `openspec/specs/engineering/**/*.md` + grep 前缀）：FE- 前缀（前端编码与交互）
 
 兼容旧 change：
@@ -51,11 +51,11 @@ model: sonnet
 4. 明确查询条件、模糊查询限制、防重复点击、防抖/节流。
 5. 多分支交互流程（≥ 3 个分支）必须用 Mermaid flowchart LR；组件状态切换用 stateDiagram；所有节点中文业务语言，禁止类名/方法名/路由路径；节点 ≤ 10，状态 ≤ 8。
 6. 明确浏览器验证路径和视口。
-7. 只允许写入 `<change-dir>/ai/05_前端方案说明.md`。
+7. 只允许写入 `<change-dir>/05_前端方案说明.md`。
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/05_前端方案说明.md`。
+必须输出到 `<change-dir>/05_前端方案说明.md`。
 
 ```markdown
 # 前端方案说明

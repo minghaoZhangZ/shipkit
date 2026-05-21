@@ -1,4 +1,4 @@
----
+﻿---
 name: data-contract-designer
 description: Use this agent when API contracts, DTOs, database schema, event payloads, compatibility, idempotency, or data migration design is needed. This agent must not modify code.
 tools: Read, Grep, Glob, Write
@@ -11,11 +11,11 @@ model: sonnet
 
 优先读取：
 
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`
-- `<change-dir>/ai/02_工程需求规格.md`
-- `<change-dir>/ai/03_代码库调研.md`
-- `<change-dir>/ai/04_后端方案说明.md`（如适用）
-- `<change-dir>/ai/05_前端方案说明.md`（如适用）
+- `<change-dir>/CONTEXT_PACKAGE.md`
+- `<change-dir>/02_工程需求规格.md`
+- `<change-dir>/03_代码库调研.md`
+- `<change-dir>/04_后端方案说明.md`（如适用）
+- `<change-dir>/05_前端方案说明.md`（如适用）
 
 兼容旧 change：
 
@@ -50,11 +50,11 @@ model: sonnet
 2. 检查前后端字段、权限失败行为、分页、排序、过滤是否一致。
 3. 检查兼容性、幂等性、灰度、回滚和版本演进风险。
 4. 所有契约必须引用代码库调研或设计证据。
-5. 只允许写入 `<change-dir>/ai/06_接口与数据契约.md`。
+5. 只允许写入 `<change-dir>/06_接口与数据契约.md`。
 
 ## 输出
 
-必须输出到 `<change-dir>/ai/06_接口与数据契约.md`。
+必须输出到 `<change-dir>/06_接口与数据契约.md`。
 
 ```markdown
 # 接口与数据契约

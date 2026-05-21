@@ -1,4 +1,4 @@
----
+﻿---
 name: prd-check-flow
 description: Use when a product or business requirement needs a product-readable PRD before engineering specification or implementation planning.
 ---
@@ -11,8 +11,8 @@ description: Use when a product or business requirement needs a product-readable
 
 必读：
 
-- `<change-dir>/ai/00_原始需求.md`。
-- `<change-dir>/ai/CONTEXT_PACKAGE.md`。
+- `<change-dir>/00_原始需求.md`。
+- `<change-dir>/CONTEXT_PACKAGE.md`。
 
 不得要求产品阅读代码、类名、SQL、接口实现、组件路径或测试命令。
 
@@ -21,7 +21,7 @@ description: Use when a product or business requirement needs a product-readable
 1. 更新 `CONTEXT_PACKAGE.md`，`current_phase=prd`，填写 Input Manifest（参见 `rules/workflow/premortem-validation.md`）。
 2. 调用 `product-discovery-analyst`。
 3. Agent 返回后检查其输出"已读输入"节是否包含 Pre-mortem 校验通过标记；校验失败时补全输入并重新调用，不得跳过。
-4. 输出 `<change-dir>/ai/01_PRD产品需求.md`。
+4. 输出 `<change-dir>/01_PRD产品需求.md`。
 4. 将业务歧义写入 `PENDING_DECISIONS.md`。
 5. 设置 checkpoint：
 

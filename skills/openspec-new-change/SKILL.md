@@ -1,4 +1,4 @@
----
+﻿---
 name: openspec-new-change
 description: Use when starting a new requirement, feature, bugfix, refactor, security fix, data migration, performance task, or test task that needs an OpenSpec change workspace.
 ---
@@ -35,7 +35,7 @@ openspec/_templates/ai
 3. 创建 change 目录：
 
 ```text
-openspec/changes/<change-id>/ai
+openspec/changes/<change-id>/
 openspec/changes/<change-id>/specs
 ```
 
@@ -55,9 +55,9 @@ openspec/changes/<change-id>/specs
 }
 ```
 
-5. 将原始需求写入 `<change-dir>/ai/00_原始需求.md`。
-6. 初始化 `<change-dir>/ai/CONTEXT_PACKAGE.md`。
-7. 初始化 `<change-dir>/ai/.workflow_state`，使用以下完整 schema（新字段初始化为空）。所有 AI 文档统一使用中文 canonical 名。
+5. 将原始需求写入 `<change-dir>/00_原始需求.md`。
+6. 初始化 `<change-dir>/CONTEXT_PACKAGE.md`。
+7. 初始化 `<change-dir>/.workflow_state`，使用以下完整 schema（新字段初始化为空）。所有 AI 文档统一使用中文 canonical 名。
 
 ```yaml
 schema_version: "1.0"

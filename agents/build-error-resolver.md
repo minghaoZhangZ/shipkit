@@ -1,4 +1,4 @@
----
+﻿---
 name: build-error-resolver
 description: Use this agent when non-Java build, lint, typecheck, dependency, formatting, or test execution errors need focused repair.
 tools: Read, Grep, Glob, Bash, Edit, Write
@@ -24,7 +24,7 @@ model: sonnet
 
 ## 硬性限制
 
-- 优先读取 `<change-dir>/ai/07_实施计划.md` 的允许修改范围；旧 change 可兼容 `07_IMPLEMENTATION_PLAN.md`。
+- 优先读取 `<change-dir>/07_实施计划.md` 的允许修改范围；旧 change 可兼容 `07_IMPLEMENTATION_PLAN.md`。
 - 只做最小修复。
 - 不降低 lint、typecheck、安全或测试门禁。
 - 不做无关重构。
@@ -37,7 +37,7 @@ model: sonnet
 3. 阅读受影响文件。
 4. 最小修改。
 5. 重新运行同一命令。
-6. 更新 `<change-dir>/ai/09_验证结果.md`。
+6. 更新 `<change-dir>/09_验证结果.md`。
 
 ## 输出
 
