@@ -33,9 +33,9 @@ model: sonnet
 
 | 文件 | 必需性 | 最小内容判据 |
 |------|--------|-------------|
-| 02_工程需求规格.md | required | 第 5 节"功能需求"非空，至少 1 个 REQ-xxx |
-| 03_代码库调研.md | required | 第 1 节"涉及模块"非空 |
-| 06_接口与数据契约.md | conditional | 如 affected_areas 含 contract，则 required；第 2 节非空 |
+| 02_工程需求规格.md | required | "功能需求"节存在且至少含 1 个 REQ-xxx 标记 |
+| 03_代码库调研.md | required | "涉及模块"节存在且非空 |
+| 06_接口与数据契约.md | conditional | 如 affected_areas 含 contract，则 required；"API 契约"节存在且非空 |
 | 工程规范 JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 | 工程规范 TX- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 | 工程规范 DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
@@ -52,8 +52,9 @@ model: sonnet
 2. 明确接口、DTO、VO、Service、Repository、Mapper、数据库、缓存、权限、事务、日志、异常。
 3. 检查循环查库/循环 Feign、事务内外部调用、锁与事务顺序、小事务原则。
 4. 所有跨类、跨模块、跨服务依赖必须引用代码库调研证据。
-5. 证据不足时写入 `PENDING_DECISIONS.md`，不得凭空设计。
-6. 只允许写入 `<change-dir>/ai/04_后端方案说明.md`。
+5. 跨模块/跨服务调用链必须用 Mermaid sequenceDiagram，参与者 ≤ 6；事务/锁获取顺序必须用 sequenceDiagram；所有节点中文业务语言，禁止类名/方法名。
+6. 证据不足时写入 `PENDING_DECISIONS.md`，不得凭空设计。
+7. 只允许写入 `<change-dir>/ai/04_后端方案说明.md`。
 
 ## 输出
 
@@ -62,42 +63,36 @@ model: sonnet
 ```markdown
 # 后端方案说明
 
-## 1. 设计目标
+## 概览
 
-## 2. 涉及模块与依赖方向
+### TL;DR
+### 设计目标
+### 涉及模块与依赖方向
+### 关键决策
 
-## 3. Controller / API 设计
+## 正文
 
-## 4. DTO / VO / Entity 设计
+### Controller / API 设计
+### DTO / VO / Entity 设计
+### Service 与领域流程
+### Repository / Mapper / SQL 设计
+### 权限与校验
+### 事务与并发
+### 外部接口与异步处理
+### 异常、日志与审计
+### 复用现有代码的依据
+### 后端任务拆分
+### 不确定点
 
-## 5. Service 与领域流程
+## 附录
 
-## 6. Repository / Mapper / SQL 设计
-
-## 7. 权限与校验
-
-## 8. 事务与并发
-
-## 9. 外部接口与异步处理
-
-## 10. 异常、日志与审计
-
-## 11. 复用现有代码的依据
-
-## 12. 后端任务拆分
-
-## 13. 不确定点
-
-## 14. Req ID 覆盖映射
+### Req ID 覆盖映射
 
 | Req ID | 后端方案 | 代码证据 | 状态 |
 |--------|----------|---------|------|
 
-## 15. 已读输入
-
-## 16. 引用证据
-
-## 17. 未覆盖项
-
-## 18. 下游依赖
+### 已读输入
+### 引用证据
+### 未覆盖项
+### 下游依赖
 ```

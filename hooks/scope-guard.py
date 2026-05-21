@@ -131,9 +131,12 @@ def parse_allowed_files(plan_path):
         return None
 
     section_patterns = [
+        r'###\s*允许修改的文件范围\s*\n(.*?)(?=\n(?:##|###)\s+|\Z)',
+        r'###\s*Allowed[^\n]*\n(.*?)(?=\n(?:##|###)\s+|\Z)',
+        r'###\s*允许修改的文件[^\n]*\n(.*?)(?=\n(?:##|###)\s+|\Z)',
+        # Legacy: old numbered-section format (backward compat)
         r'##\s*7\.\s*允许修改的文件范围\s*\n(.*?)(?=\n##\s*\d+\.|\Z)',
         r'##\s*7\.\s*Allowed[^\n]*\n(.*?)(?=\n##\s*\d+\.|\Z)',
-        r'##\s*7\.\s*允许修改的文件[^\n]*\n(.*?)(?=\n##\s*\d+\.|\Z)',
     ]
     section = None
     for pattern in section_patterns:

@@ -34,8 +34,8 @@ model: sonnet
 
 | 文件 | 必需性 | 最小内容判据 |
 |------|--------|-------------|
-| 02_工程需求规格.md | required | 第 5 节"功能需求"非空，Req ID 列表完整 |
-| 07_实施计划.md | required | 第 7 节"允许修改的文件范围"非空 |
+| 02_工程需求规格.md | required | "功能需求"节存在且非空，Req ID 列表完整 |
+| 07_实施计划.md | required | "允许修改的文件范围"节存在且非空 |
 | 08_验证计划.md | required | 至少 1 个验证用例 |
 | 09_验证结果.md | required | 至少 1 条实际运行命令及退出码 |
 | 工程规范 FORBID- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |

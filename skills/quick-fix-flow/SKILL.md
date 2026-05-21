@@ -49,7 +49,7 @@ trace_matrix_status: lightweight
 
 3. 更新 `CONTEXT_PACKAGE.md`，声明 minimal、输入、输出合同、停止条件；填写 Input Manifest（minimal 判据可放宽：文件存在即为通过）。
 4. 执行只读代码库调研，调用 `codebase-researcher` 输出 `03_代码库调研.md`。返回后检查 Pre-mortem 校验通过标记。
-5. 初始化 `task_stack`（3-5 项），输出轻量 `07_实施计划.md`，必须包含第 7 节”允许修改的文件范围”。
+5. 初始化 `task_stack`（3-5 项），输出轻量 `07_实施计划.md`，必须包含”允许修改的文件范围”节。
 6. 按需输出 `08_验证计划.md`；小 UI bug 必须记录页面、组件、复现路径、视口和预期结果。
 7. 更新 `.workflow_state`：`current_phase=coding`，`current_task` 为第一个实施任务，`next_action` 为具体操作。
 8. 主控 Agent 只修改计划允许的文件，每完成一个 task 更新 `current_task`、`last_completed_task`、`next_action`、`resume_context`。如有测试用例，优先写测试再写实现。

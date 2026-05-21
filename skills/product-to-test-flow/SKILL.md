@@ -271,7 +271,7 @@ ralph:
 1. 使用 `engineering-spec-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
    - `00_原始需求.md`: required，文件存在且非空
-   - `01_PRD产品需求.md`: required，第 8 节"业务流程"和第 10 节"验收标准"非空
+   - `01_PRD产品需求.md`: required，"业务流程"和"验收标准"节存在且非空
 3. 初始化 `task_stack`：
    - "本次实现范围与不实现范围"
    - "功能需求与权限规则"
@@ -286,7 +286,7 @@ ralph:
 ### research
 
 1. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
-   - `02_工程需求规格.md`: required，第 5 节"功能需求"非空，至少 1 个 REQ-xxx
+   - `02_工程需求规格.md`: required，"功能需求"节存在且至少含 1 个 REQ-xxx 标记
 2. 初始化 `task_stack`：
    - "定位相似模块与可复用 API"
    - "分析模块边界与依赖方向"
@@ -315,8 +315,8 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 
 1. 使用 `backend-design-check-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
-   - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
-   - `03_代码库调研.md`: required，第 1 节"涉及模块"非空
+   - `02_工程需求规格.md`: required，"功能需求"节存在且至少含 1 个 REQ-xxx 标记
+   - `03_代码库调研.md`: required，"涉及模块"节存在且非空
    - 工程规范 JAVA-DA-/JAVA-CQ-/JAVA-CFG- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
    - 工程规范 TX- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
    - 工程规范 DB-IDX-/DB-QRY-/DB-SAFE-/DB-DEPLOY- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
@@ -341,8 +341,8 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 
 1. 使用 `frontend-design-check-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
-   - `01_PRD产品需求.md`: required，第 8 节"业务流程"非空
-   - `02_工程需求规格.md`: required，第 5 节非空，至少 1 个 REQ-xxx
+   - `01_PRD产品需求.md`: required，"业务流程"节存在且非空
+   - `02_工程需求规格.md`: required，"功能需求"节存在且至少含 1 个 REQ-xxx 标记
    - `03_代码库调研.md`: required，涉及前端模块的证据非空
    - 工程规范 FE- 前缀: conditional（如 engineering.json rulePrefixIndex 存在则 required）
 3. 初始化 `task_stack`：
@@ -365,8 +365,8 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 
 1. 使用 `contract-check-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
-   - `02_工程需求规格.md`: required，第 5 节非空
-   - `03_代码库调研.md`: required，第 1 节非空
+   - `02_工程需求规格.md`: required，"功能需求"节存在且非空
+   - `03_代码库调研.md`: required，"涉及模块"节存在且非空
    - `04_后端方案说明.md`: conditional（affected_areas 含 backend 则 required）
    - `05_前端方案说明.md`: conditional（affected_areas 含 frontend 则 required）
 3. 初始化 `task_stack`：
@@ -386,8 +386,8 @@ research 完成后，根据 `affected_areas` 判断需要哪些设计，**前后
 
 1. 使用 `implementation-plan-check-flow`。
 2. 更新 `CONTEXT_PACKAGE.md`，填写 Input Manifest：
-   - `02_工程需求规格.md`: required，第 5 节非空且 Req ID 列表完整
-   - `03_代码库调研.md`: required，第 1 节非空
+   - `02_工程需求规格.md`: required，"功能需求"节存在且非空，Req ID 覆盖映射完整
+   - `03_代码库调研.md`: required，"涉及模块"节存在且非空
    - `04_后端方案说明.md`: conditional（affected_areas 含 backend 则 required）
    - `05_前端方案说明.md`: conditional（affected_areas 含 frontend 则 required）
    - `06_接口与数据契约.md`: conditional（affected_areas 含 contract 或 strict profile 则 required）

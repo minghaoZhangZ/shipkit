@@ -23,14 +23,14 @@ model: sonnet
 
 | 文件 | 最小内容判据 |
 |------|-------------|
-| 04_后端方案说明.md | 第 2 节"涉及模块与依赖方向"非空 |
+| 04_后端方案说明.md | "涉及模块与依赖方向"节存在且非空 |
 
 **实现后**：
 
 | 文件 | 必需性 | 最小内容判据 |
 |------|--------|-------------|
 | 02_工程需求规格.md | required | Req ID 列表完整 |
-| 07_实施计划.md | required | 第 7 节"允许修改的文件范围"非空 |
+| 07_实施计划.md | required | "允许修改的文件范围"节存在且非空 |
 | git diff 输出 | required | 至少 1 个 Java 文件变更 |
 | 工程规范 FORBID- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |
 | 工程规范 MOD-API-/MOD-PRIVATE- 前缀 | conditional | 如 engineering.json rulePrefixIndex 存在则 required |

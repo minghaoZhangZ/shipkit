@@ -24,9 +24,9 @@ description: Use after verification passes, before review. Audits whether the ta
 
 | 文件 | 必需性 | 最小内容判据 |
 |------|--------|-------------|
-| `02_工程需求规格.md` | required | 第 9 节"验收标准"非空，至少 1 个 REQ-xxx |
-| `07_实施计划.md` | required | 第 7 节"允许修改的文件范围"非空 |
-| `08_验证计划.md` | required | 第 4 节"单元测试用例"非空 |
+| `02_工程需求规格.md` | required | "验收标准"节存在且至少含 1 个 REQ-xxx 标记 |
+| `07_实施计划.md` | required | "允许修改的文件范围"节存在且非空 |
+| `08_验证计划.md` | required | "单元测试用例"节存在且非空 |
 | `09_验证结果.md` | required | 含 test-planner 评估结论标记（"评估结论: 充分" 或 "评估结论: 不充分"） |
 | `.workflow_state` | required | 含 ralph 字段 |
 
@@ -58,7 +58,7 @@ description: Use after verification passes, before review. Audits whether the ta
 ### D. 边界条件覆盖（标准）
 
 - 检查测试是否覆盖失败路径（不只是 happy path）。
-- 检查 `08_验证计划.md` 第 11 节"无法自动化"项是否有手动验证记录。
+- 检查 `08_验证计划.md` "无法自动化项与人工验证"节是否有手动验证记录。
 - 检查空值、边界值、异常输入是否有对应用例。
 
 ### E. 去冗余检查（ralph deep 模式，可选）
